@@ -2,6 +2,7 @@ package com.example.safeher;
 import android.app.AlertDialog;
 import android.content.SharedPreferences;
 import android.content.pm.PackageManager;
+import android.location.Location;
 import android.media.MediaPlayer;
 import android.os.Bundle;
 import android.telephony.SmsManager;
@@ -13,6 +14,10 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
+
+import com.google.android.gms.location.FusedLocationProviderClient;
+import com.google.android.gms.location.LocationServices;
+import com.google.android.gms.tasks.OnSuccessListener;
 import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.Manifest;
@@ -21,6 +26,7 @@ import android.Manifest;
 public class DashBoardActivity extends AppCompatActivity {
 
     private static final int SMS_PERMISSION_CODE = 100;
+    private static final int LOCATION_PERMISSION_CODE = 101;
     private static final String PHONE_NUMBER = "9594693842";
     private static final String HELP_MESSAGE = "Help me! I need assistance.";
 
@@ -28,8 +34,8 @@ public class DashBoardActivity extends AppCompatActivity {
     private long firstPressTime = 0;
     private int pressCount = 0;
     private int lastKeyCode = 0;
-
-
+    private FusedLocationProviderClient fusedLocationClient;
+    private String currentLocation = "Location not available";
 
 
     @Override
@@ -39,6 +45,8 @@ public class DashBoardActivity extends AppCompatActivity {
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         loadFragment(new HomeFragment());
+
+        fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
@@ -66,10 +74,11 @@ public class DashBoardActivity extends AppCompatActivity {
         FloatingActionButton sosButton = findViewById(R.id.sosButton);
         sosButton.setOnClickListener(view -> {
 //            showSOSConfirmationDialog();
-            sendHelpMessage();
+            requestLocationAndSendSms();
             Toast.makeText(this, "Sos alerted", Toast.LENGTH_SHORT).show();
         });
     }
+
 
     @Override
     public boolean onKeyDown(int keyCode, KeyEvent event) {
@@ -117,18 +126,30 @@ public class DashBoardActivity extends AppCompatActivity {
     private MediaPlayer mediaPlayer;
     private boolean isSOSActive = false;
 
-//    public void sendSOSMessage() {
-//        String phoneNumber = "+919594693842"; // Replace with emergency contact
-//        String message = "🚨 SOS Alert! Help needed at my location! 📍http://maps.google.com/?q=latitude,longitude";
-//
-//        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
-//            SmsManager smsManager = SmsManager.getDefault();
-//            smsManager.sendTextMessage(phoneNumber, null, message, null, null);
-//            Toast.makeText(this, "SOS message sent!", Toast.LENGTH_SHORT).show();
-//        } else {
-//            Toast.makeText(this, "SMS permission required!", Toast.LENGTH_SHORT).show();
-//        }
-//    }
+    private void requestLocationAndSendSms() {
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
+            fetchLocation();
+        } else {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.ACCESS_FINE_LOCATION}, LOCATION_PERMISSION_CODE);
+        }
+    }
+
+    private void fetchLocation() {
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) != PackageManager.PERMISSION_GRANTED && ActivityCompat.checkSelfPermission(this, Manifest.permission.ACCESS_COARSE_LOCATION) != PackageManager.PERMISSION_GRANTED) {
+            return;
+        }
+        fusedLocationClient.getLastLocation().addOnSuccessListener(this, new OnSuccessListener<Location>() {
+            @Override
+            public void onSuccess(Location location) {
+                if (location != null) {
+                    currentLocation = "Help me! I need assistance.\nMy Location: https://maps.google.com/?q=" + location.getLatitude() + "," + location.getLongitude();
+                } else {
+                    currentLocation = "Help me! I need assistance.\nLocation not available.";
+                }
+                sendHelpMessage();
+            }
+        });
+    }
 
     private void sendHelpMessage() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
@@ -141,12 +162,13 @@ public class DashBoardActivity extends AppCompatActivity {
     private void sendSms() {
         try {
             SmsManager smsManager = SmsManager.getDefault();
-            smsManager.sendTextMessage(PHONE_NUMBER, null, HELP_MESSAGE, null, null);
+            smsManager.sendTextMessage(PHONE_NUMBER, null, currentLocation, null, null);
             Toast.makeText(this, "Help message sent!", Toast.LENGTH_SHORT).show();
         } catch (Exception e) {
             Toast.makeText(this, "Failed to send SMS.", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     private void triggerSOSAlert() {
         SharedPreferences sharedPreferences = getSharedPreferences("SOSSettings", MODE_PRIVATE);
