@@ -14,7 +14,6 @@ import androidx.core.content.ContextCompat;
 import androidx.fragment.app.Fragment;
 import androidx.fragment.app.FragmentManager;
 import androidx.fragment.app.FragmentTransaction;
-
 import com.google.android.gms.location.FusedLocationProviderClient;
 import com.google.android.gms.location.LocationServices;
 import com.google.android.gms.tasks.OnSuccessListener;
@@ -22,31 +21,41 @@ import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.google.android.material.floatingactionbutton.FloatingActionButton;
 import android.Manifest;
 
-
 public class DashBoardActivity extends AppCompatActivity {
-
+    //Permission Codes
     private static final int SMS_PERMISSION_CODE = 100;
     private static final int LOCATION_PERMISSION_CODE = 101;
+
+    //Undefined Location and SMS body
     private static final String PHONE_NUMBER = "9594693842";
     private static final String HELP_MESSAGE = "Help me! I need assistance.";
+    private String currentLocation = "Location not available";
 
+    //Variables to track SOS sound [play or stop]
+    private MediaPlayer mediaPlayer;
+    private boolean isSOSActive = false;
+
+    //Variables to track Volume down action (to stop SOS)
     private static final int MULTI_PRESS_INTERVAL = 600; // Time interval for triple press detection (600ms)
     private long firstPressTime = 0;
     private int pressCount = 0;
     private int lastKeyCode = 0;
     private FusedLocationProviderClient fusedLocationClient;
-    private String currentLocation = "Location not available";
-
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_dash_board);
 
-        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
-        loadFragment(new HomeFragment());
+        //Check and get sms sending perms
+        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
+            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
+        }
 
         fusedLocationClient = LocationServices.getFusedLocationProviderClient(this);
+
+        BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
+        loadFragment(new HomeFragment());
 
         bottomNav.setOnNavigationItemSelectedListener(item -> {
             Fragment selectedFragment = null;
@@ -68,63 +77,28 @@ public class DashBoardActivity extends AppCompatActivity {
             return true;
         });
 
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
-        }
         FloatingActionButton sosButton = findViewById(R.id.sosButton);
         sosButton.setOnClickListener(view -> {
-//            showSOSConfirmationDialog();
-            requestLocationAndSendSms();
+            showSOSConfirmationDialog();
             Toast.makeText(this, "Sos alerted", Toast.LENGTH_SHORT).show();
         });
     }
 
-
-    @Override
-    public boolean onKeyDown(int keyCode, KeyEvent event) {
-        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
-            long currentTime = System.currentTimeMillis();
-
-            if (keyCode == lastKeyCode && (currentTime - firstPressTime) < MULTI_PRESS_INTERVAL) {
-                pressCount++;
-            } else {
-                pressCount = 1;
-            }
-
-            firstPressTime = currentTime;
-            lastKeyCode = keyCode;
-
-            if (pressCount == 3) { // Check if pressed 3 times
-                stopSOSAlert();
-                pressCount = 0; // Reset count
-            }
-
-            return true; // Consume the event
-        }
-        return super.onKeyDown(keyCode, event);
-    }
-
-    // Method to show the SOS confirmation dialog
+    // Method to show the SOS confirmation dialog (Float button [SOS] click)
     private void showSOSConfirmationDialog() {
         new AlertDialog.Builder(this)
                 .setTitle("Confirm SOS")
                 .setMessage("You are about to trigger SOS actions. Are you sure?")
                 .setPositiveButton("Yes", (dialog, which) -> {
-                    // User clicked "Yes", trigger SOS actions
                     triggerSOSAlert();
-                    Toast.makeText(this, "SOS Alerted!", Toast.LENGTH_SHORT).show();
                 })
                 .setNegativeButton("No", (dialog, which) -> {
-                    // User clicked "No", dismiss the dialog
                     dialog.dismiss();
+                    Toast.makeText(this, "SOS cancelled", Toast.LENGTH_SHORT).show();
                 })
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .show();
     }
-
-
-    private MediaPlayer mediaPlayer;
-    private boolean isSOSActive = false;
 
     private void requestLocationAndSendSms() {
         if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
@@ -169,7 +143,7 @@ public class DashBoardActivity extends AppCompatActivity {
         }
     }
 
-
+    //Perform actions
     private void triggerSOSAlert() {
         SharedPreferences sharedPreferences = getSharedPreferences("SOSSettings", MODE_PRIVATE);
 
@@ -192,15 +166,15 @@ public class DashBoardActivity extends AppCompatActivity {
                 isSOSActive = true;
             }
         }
-//
-//        if (sendSMS) {
-//            // Send SMS to contacts
+
+        if (sendSMS) {
+            // Send SMS to contacts
 //            SmsManager smsManager = SmsManager.getDefault();
 //            if (!contact1.isEmpty()) smsManager.sendTextMessage(contact1, null, messageBody, null, null);
 //            if (!contact2.isEmpty()) smsManager.sendTextMessage(contact2, null, messageBody, null, null);
 //            if (!contact3.isEmpty()) smsManager.sendTextMessage(contact3, null, messageBody, null, null);
-//        }
-//
+            requestLocationAndSendSms();
+        }
 //        if (sendNotification) {
 //            // Send notification
 //            NotificationManager notificationManager = (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
@@ -221,9 +195,34 @@ public class DashBoardActivity extends AppCompatActivity {
 //
 //            notificationManager.notify(1, builder.build());
 //        }
-
     }
 
+    //Listen for triple press event on volume button
+    @Override
+    public boolean onKeyDown(int keyCode, KeyEvent event) {
+        if (keyCode == KeyEvent.KEYCODE_VOLUME_UP || keyCode == KeyEvent.KEYCODE_VOLUME_DOWN) {
+            long currentTime = System.currentTimeMillis();
+
+            if (keyCode == lastKeyCode && (currentTime - firstPressTime) < MULTI_PRESS_INTERVAL) {
+                pressCount++;
+            } else {
+                pressCount = 1;
+            }
+
+            firstPressTime = currentTime;
+            lastKeyCode = keyCode;
+
+            if (pressCount == 3) { // Check if pressed 3 times
+                stopSOSAlert();
+                pressCount = 0; // Reset count
+            }
+
+            return true; // Consume the event
+        }
+        return super.onKeyDown(keyCode, event);
+    }
+
+    //Call this method to stop SOS
     private void stopSOSAlert() {
         if (mediaPlayer != null && isSOSActive) {
             mediaPlayer.stop();
@@ -233,6 +232,7 @@ public class DashBoardActivity extends AppCompatActivity {
             Toast.makeText(this, "SOS Alert Stopped!", Toast.LENGTH_SHORT).show();
         }
     }
+
 
     // Helper method to load fragments
     private void loadFragment(Fragment fragment) {
