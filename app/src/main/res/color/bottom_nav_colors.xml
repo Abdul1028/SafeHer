@@ -1,0 +1,7 @@
+<!-- res/color/bottom_nav_colors.xml -->
+<selector xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Active state (selected item) -->
+    <item android:state_checked="true" android:color="@color/black" />
+    <!-- Inactive state (unselected items) -->
+    <item android:state_checked="false" android:color="@color/white" />
+</selector>

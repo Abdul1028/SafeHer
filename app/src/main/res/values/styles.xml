@@ -1,0 +1,32 @@
+<resources>
+<!-- Custom style for BottomNavigationView -->
+<style name="CustomBottomNavigationView" parent="Widget.MaterialComponents.BottomNavigationView">
+    <!-- Remove padding and rounded corners -->
+    <item name="itemPaddingTop">0dp</item>
+    <item name="itemPaddingBottom">0dp</item>
+    <item name="itemBackground">@null</item> <!-- Remove background -->
+    <item name="itemTextAppearanceActive">@style/CustomTextAppearanceActive</item>
+    <item name="itemTextAppearanceInactive">@style/CustomTextAppearanceInactive</item>
+</style>
+
+<!-- Custom text appearance for active item -->
+<style name="CustomTextAppearanceActive" parent="TextAppearance.AppCompat">
+    <item name="android:textSize">14sp</item>
+    <item name="android:textColor">@color/white</item> <!-- Active text color -->
+    <item name="iconTint">@color/white</item>
+</style>
+
+<!-- Custom text appearance for inactive item -->
+<style name="CustomTextAppearanceInactive" parent="TextAppearance.AppCompat">
+    <item name="android:textSize">14sp</item>
+    <item name="android:textColor">@color/black</item> <!-- Inactive text color -->
+    <item name="iconTint">@color/black</item>
+</style>
+
+
+<style name="ShapeAppearanceOverlay.RoundedFab" parent="">
+    <item name="cornerFamily">rounded</item>
+    <item name="cornerSize">50%</item>
+</style>
+
+</resources>

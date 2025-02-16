@@ -6,14 +6,20 @@
         android:title="Profile" />
     <item
         android:id="@+id/nav_home"
-        android:icon="@drawable/logo"
+        android:icon="@drawable/baseline_home_24"
         android:title="Home" />
+
+    <item
+        android:id="@+id/sos"
+        android:enabled="false"
+        android:title="" />
+
     <item
         android:id="@+id/nav_alerts"
-        android:icon="@drawable/baseline_lock_24"
+        android:icon="@drawable/baseline_message_24"
         android:title="Alerts" />
     <item
         android:id="@+id/nav_settings"
-        android:icon="@drawable/sitting_person"
+        android:icon="@drawable/baseline_settings_24"
         android:title="Settings" />
 </menu>
