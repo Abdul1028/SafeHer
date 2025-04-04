@@ -11,15 +11,26 @@
         android:orientation="vertical"
         android:padding="16dp">
 
+        <!-- User Info Section -->
+        <TextView
+            android:id="@+id/userEmailTextView"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Logged in as: user@example.com"
+            android:textSize="16sp"
+            android:textColor="@color/black"
+            android:layout_marginBottom="24dp"
+            android:visibility="gone" /> <!-- Initially hidden -->
+
         <!-- Emergency Contacts Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="Emergency Contacts"
+            android:text="Emergency Contacts (Max 5)"
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
         <!-- Button to Open Contact Picker -->
         <com.google.android.material.button.MaterialButton
@@ -30,15 +41,24 @@
             android:backgroundTint="@color/purple"
             android:textColor="@color/white"
             app:cornerRadius="8dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
         <!-- List of Selected Contacts -->
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:text="Selected Contacts:"
+            android:textSize="16sp"
+            android:textStyle="italic"
+            android:textColor="@color/black"
+            android:layout_marginBottom="8dp" />
+
         <LinearLayout
             android:id="@+id/selectedContactsContainer"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="24dp" /> <!-- Increased bottom margin -->
 
         <!-- SOS Message Section -->
         <TextView
@@ -48,29 +68,25 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginBottom="8dp" />
 
         <com.google.android.material.textfield.TextInputLayout
-            android:id="@+id/messageBodyLayout"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:hint="Enter SOS message"
-            app:startIconDrawable="@drawable/ic_arrow_back"
-            app:boxStrokeColor="@color/purple"
-            app:boxStrokeWidth="1dp"
-         >
+            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
+            android:layout_marginBottom="8dp">
 
             <com.google.android.material.textfield.TextInputEditText
                 android:id="@+id/messageBody"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
+                android:hint="Message to send (include [Location] for coordinates)"
                 android:inputType="textMultiLine"
-                android:minLines="3" />
+                android:minLines="3"
+                android:gravity="top"/>
         </com.google.android.material.textfield.TextInputLayout>
 
-        <!-- SOS Actions Section -->
+        <!-- SOS Options Section -->
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
@@ -78,8 +94,8 @@
             android:textSize="20sp"
             android:textStyle="bold"
             android:textColor="@color/black"
-            android:layout_marginTop="24dp"
-            android:layout_marginBottom="16dp" />
+            android:layout_marginTop="16dp"
+            android:layout_marginBottom="8dp" />
 
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
@@ -99,7 +115,7 @@
                     android:id="@+id/playSound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Play Sound"
+                    android:text="Play Loud Sound"
                     android:checked="true"
                     app:buttonTint="@color/purple" />
 
@@ -107,7 +123,7 @@
                     android:id="@+id/sendSMS"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Send SMS"
+                    android:text="Send SMS to Contacts"
                     android:checked="true"
                     app:buttonTint="@color/purple" />
 
@@ -115,9 +131,10 @@
                     android:id="@+id/sendNotification"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
-                    android:text="Send Notification"
+                    android:text="Send Notification (Placeholder)"
                     android:checked="true"
-                    app:buttonTint="@color/purple" />
+                    app:buttonTint="@color/purple"
+                    android:layout_marginBottom="16dp"/>
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -131,6 +148,19 @@
             android:backgroundTint="@color/purple"
             android:textColor="@color/white"
             app:cornerRadius="8dp" />
+
+        <!-- Sign Out Button -->
+        <com.google.android.material.button.MaterialButton
+            android:id="@+id/signOutButton"
+            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Sign Out"
+            android:layout_marginTop="16dp"
+            android:textColor="@color/purple"
+            app:strokeColor="@color/purple"
+            app:cornerRadius="8dp"
+            android:visibility="gone"/> <!-- Initially hidden -->
 
     </LinearLayout>
 </ScrollView>

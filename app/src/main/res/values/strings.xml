@@ -2,4 +2,5 @@
     <string name="app_name">SafeHer</string>
     <!-- TODO: Remove or change this placeholder text -->
     <string name="hello_blank_fragment">Hello blank fragment</string>
+    <string name="default_web_client_id">429335494802-iiks5brb1a21ev4b3eq2kjrsjt99nuhj.apps.googleusercontent.com</string>
 </resources>

@@ -43,8 +43,8 @@
         android:src="@drawable/baseline_sos_24"
         app:fabSize="normal"
         android:backgroundTint="#966EE2"
-        app:fabCustomSize="80dp"
-
+        app:fabCustomSize="100dp"
+        android:layout_marginBottom="16dp"
         app:shapeAppearanceOverlay="@style/ShapeAppearanceOverlay.RoundedFab"
         app:layout_anchor="@id/bottomAppBar"
         app:layout_anchorGravity="center|top"

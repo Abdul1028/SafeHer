@@ -222,7 +222,7 @@ public class DashBoardActivity extends AppCompatActivity {
         return super.onKeyDown(keyCode, event);
     }
 
-    //Call this method to stop SOS
+    //Call this method to stop SOSa6ui0\,m,
     private void stopSOSAlert() {
         if (mediaPlayer != null && isSOSActive) {
             mediaPlayer.stop();
