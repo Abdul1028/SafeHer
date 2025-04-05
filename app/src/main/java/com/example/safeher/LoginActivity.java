@@ -27,6 +27,9 @@ import com.google.firebase.auth.AuthResult;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 import com.google.firebase.auth.GoogleAuthProvider;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.messaging.FirebaseMessaging;
 
 public class LoginActivity extends AppCompatActivity {
     private static final String TAG = "LoginActivity";
@@ -143,6 +146,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success
                             Log.d(TAG, "signInWithEmail:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            saveFCMToken();
                             startActivity(new Intent(LoginActivity.this, DashBoardActivity.class));
                             finish();
                         } else {
@@ -193,6 +197,7 @@ public class LoginActivity extends AppCompatActivity {
                             // Sign in success
                             Log.d(TAG, "signInWithCredential:success");
                             FirebaseUser user = mAuth.getCurrentUser();
+                            saveFCMToken();
                             startActivity(new Intent(LoginActivity.this, DashBoardActivity.class));
                             finish();
                         } else {
@@ -203,5 +208,23 @@ public class LoginActivity extends AppCompatActivity {
                         }
                     }
                 });
+    }
+
+    private void saveFCMToken() {
+        FirebaseMessaging.getInstance().getToken().addOnCompleteListener(task -> {
+            if (!task.isSuccessful()) {
+                Log.w(TAG, "Fetching FCM registration token failed", task.getException());
+                return;
+            }
+            String token = task.getResult();
+            FirebaseUser firebaseUser = mAuth.getCurrentUser();
+            if (firebaseUser != null) {
+                String userId = firebaseUser.getUid();
+                DatabaseReference ref = FirebaseDatabase.getInstance().getReference("users").child(userId);
+                ref.child("fcm_token").setValue(token)
+                        .addOnSuccessListener(aVoid -> Log.d(TAG, "FCM token saved successfully"))
+                        .addOnFailureListener(e -> Log.w(TAG, "Error saving FCM token", e));
+            }
+        });
     }
 }
