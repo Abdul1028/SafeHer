@@ -1,1 +1,96 @@
-package com.example.safeher;\n\nimport androidx.annotation.NonNull;\nimport androidx.appcompat.app.AppCompatActivity;\nimport androidx.fragment.app.FragmentActivity; // Use FragmentActivity for map\n\nimport android.content.Intent;\nimport android.os.Bundle;\nimport android.util.Log;\nimport android.widget.Toast;\n\nimport com.google.android.gms.maps.CameraUpdateFactory;\nimport com.google.android.gms.maps.GoogleMap;\nimport com.google.android.gms.maps.OnMapReadyCallback;\nimport com.google.android.gms.maps.SupportMapFragment;\nimport com.google.android.gms.maps.model.LatLng;\nimport com.google.android.gms.maps.model.MarkerOptions;\n// import com.example.safeher.databinding.ActivitySosMapBinding; // Optional: Use ViewBinding if set up\n\npublic class SosMapActivity extends FragmentActivity implements OnMapReadyCallback {\n\n    private GoogleMap mMap;\n    private static final String TAG = \"SosMapActivity\";\n    private double sosLat = 0.0;\n    private double sosLng = 0.0;\n    private static final float DEFAULT_ZOOM = 15f;\n\n    // private ActivitySosMapBinding binding; // Optional: ViewBinding\n\n    @Override\n    protected void onCreate(Bundle savedInstanceState) {\n        super.onCreate(savedInstanceState);\n\n        // binding = ActivitySosMapBinding.inflate(getLayoutInflater()); // Optional: ViewBinding\n        // setContentView(binding.getRoot()); // Optional: ViewBinding\n        setContentView(R.layout.activity_sos_map); // Use standard setContentView\n\n        // Get coordinates from intent\n        Intent intent = getIntent();\n        if (intent != null && intent.hasExtra(\"sos_alert_lat\") && intent.hasExtra(\"sos_alert_lng\")) {\n            sosLat = intent.getDoubleExtra(\"sos_alert_lat\", 0.0);\n            sosLng = intent.getDoubleExtra(\"sos_alert_lng\", 0.0);\n            Log.d(TAG, \"Received SOS coordinates: Lat=\" + sosLat + \", Lng=\" + sosLng);\n        } else {\n            Log.e(TAG, \"SOS coordinates not found in intent extras!\");\n            Toast.makeText(this, \"Error: Could not load SOS location.\", Toast.LENGTH_LONG).show();\n            // Handle error, maybe finish activity?\n            // finish();\n            // return; // Don't proceed to load map if no coords\n        }\n\n        // Obtain the SupportMapFragment and get notified when the map is ready to be used.\n        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()\n                .findFragmentById(R.id.map);\n        if (mapFragment != null) {\n            mapFragment.getMapAsync(this);\n        } else {\n            Log.e(TAG, \"SupportMapFragment not found!\");\n            Toast.makeText(this, \"Error initializing map.\", Toast.LENGTH_SHORT).show();\n        }\n    }\n\n    /**\n     * Manipulates the map once available.\n     * This callback is triggered when the map is ready to be used.\n     * This is where we can add markers or lines, add listeners or move the camera.\n     * If Google Play services is not installed on the device, the user will be prompted to install\n     * it inside the SupportMapFragment. This method will only be triggered once the user has\n     * installed Google Play services and returned to the app.\n     */\n    @Override\n    public void onMapReady(@NonNull GoogleMap googleMap) {\n        mMap = googleMap;\n        Log.d(TAG, \"Map is ready.\");\n\n        if (sosLat != 0.0 && sosLng != 0.0) {\n            // Add a marker at the SOS location and move the camera\n            LatLng sosLocation = new LatLng(sosLat, sosLng);\n            mMap.addMarker(new MarkerOptions().position(sosLocation).title(\"SOS Location\"));\n            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sosLocation, DEFAULT_ZOOM));\n            Log.d(TAG, \"Marker added and camera moved to SOS location.\");\n\n            // Optional: Add other map configurations\n            // mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);\n            // mMap.getUiSettings().setZoomControlsEnabled(true);\n        } else {\n            Log.w(TAG, \"SOS coordinates are invalid (0,0), cannot place marker.\");\n            // Optionally show a default location or just log the warning\n        }\n    }\n}\n 
+package com.example.safeher;
+
+import androidx.annotation.NonNull;
+// import androidx.appcompat.app.AppCompatActivity; // Use FragmentActivity for maps
+import androidx.fragment.app.FragmentActivity;
+
+import android.content.Intent;
+import android.os.Bundle;
+import android.util.Log;
+import android.widget.Toast;
+
+import com.google.android.gms.maps.CameraUpdateFactory;
+import com.google.android.gms.maps.GoogleMap;
+import com.google.android.gms.maps.OnMapReadyCallback;
+import com.google.android.gms.maps.SupportMapFragment;
+import com.google.android.gms.maps.model.LatLng;
+import com.google.android.gms.maps.model.MarkerOptions;
+// import com.example.safeher.databinding.ActivitySosMapBinding; // Optional: Use ViewBinding if set up
+
+// Ensure class extends FragmentActivity for SupportMapFragment
+public class SosMapActivity extends FragmentActivity implements OnMapReadyCallback {
+
+    private GoogleMap mMap;
+    private static final String TAG = "SosMapActivity";
+    private double sosLat = 0.0;
+    private double sosLng = 0.0;
+    private static final float DEFAULT_ZOOM = 15f;
+
+    // private ActivitySosMapBinding binding; // Optional: ViewBinding
+
+    @Override
+    protected void onCreate(Bundle savedInstanceState) {
+        super.onCreate(savedInstanceState);
+
+        // binding = ActivitySosMapBinding.inflate(getLayoutInflater()); // Optional: ViewBinding
+        // setContentView(binding.getRoot()); // Optional: ViewBinding
+        setContentView(R.layout.activity_sos_map); // Use standard setContentView
+
+        // Get coordinates from intent
+        Intent intent = getIntent();
+        if (intent != null && intent.hasExtra("sos_alert_lat") && intent.hasExtra("sos_alert_lng")) {
+            sosLat = intent.getDoubleExtra("sos_alert_lat", 0.0);
+            sosLng = intent.getDoubleExtra("sos_alert_lng", 0.0);
+            Log.d(TAG, "Received SOS coordinates: Lat=" + sosLat + ", Lng=" + sosLng);
+        } else {
+            Log.e(TAG, "SOS coordinates not found in intent extras!");
+            Toast.makeText(this, "Error: Could not load SOS location.", Toast.LENGTH_LONG).show();
+            // Handle error, maybe finish activity?
+            // finish();
+            // return; // Don't proceed to load map if no coords
+        }
+
+        // Obtain the SupportMapFragment and get notified when the map is ready to be used.
+        // Use getSupportFragmentManager() from FragmentActivity
+        SupportMapFragment mapFragment = (SupportMapFragment) getSupportFragmentManager()
+                .findFragmentById(R.id.map);
+        if (mapFragment != null) {
+            mapFragment.getMapAsync(this);
+        } else {
+            Log.e(TAG, "SupportMapFragment not found!");
+            Toast.makeText(this, "Error initializing map.", Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    /**
+     * Manipulates the map once available.
+     * This callback is triggered when the map is ready to be used.
+     * This is where we can add markers or lines, add listeners or move the camera.
+     * If Google Play services is not installed on the device, the user will be prompted to install
+     * it inside the SupportMapFragment. This method will only be triggered once the user has
+     * installed Google Play services and returned to the app.
+     */
+    @Override
+    public void onMapReady(@NonNull GoogleMap googleMap) {
+        mMap = googleMap;
+        Log.d(TAG, "Map is ready.");
+
+        if (sosLat != 0.0 || sosLng != 0.0) { // Check if coords were actually received
+            // Add a marker at the SOS location and move the camera
+            LatLng sosLocation = new LatLng(sosLat, sosLng);
+            mMap.addMarker(new MarkerOptions().position(sosLocation).title("SOS Location"));
+            mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(sosLocation, DEFAULT_ZOOM));
+            Log.d(TAG, "Marker added and camera moved to SOS location.");
+
+            // Optional: Add other map configurations
+            // mMap.setMapType(GoogleMap.MAP_TYPE_HYBRID);
+            // mMap.getUiSettings().setZoomControlsEnabled(true);
+        } else {
+            Log.w(TAG, "SOS coordinates are invalid or missing, cannot place marker accurately.");
+            // Optionally show a default location or just log the warning
+            // Example: Move camera to a default location
+            // LatLng defaultLocation = new LatLng(0, 0); // Or a sensible default
+            // mMap.moveCamera(CameraUpdateFactory.newLatLngZoom(defaultLocation, 3f));
+        }
+    }
+} 

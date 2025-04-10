@@ -41,8 +41,7 @@ import java.util.Map;
 public class DashBoardActivity extends AppCompatActivity {
     private static final String TAG = "DashBoardActivity";
     //Permission Codes
-    private static final int SMS_PERMISSION_CODE = 100;
-    private static final int LOCATION_PERMISSION_CODE = 101;
+    private static final int ALL_PERMISSIONS_CODE = 102; // New code for combined request
 
     //Undefined Location and SMS body
     private static final String PHONE_NUMBER = "9594693842";
@@ -85,11 +84,6 @@ public class DashBoardActivity extends AppCompatActivity {
         }
 
         createLocationCallback();
-
-        //Check and get sms sending perms
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) != PackageManager.PERMISSION_GRANTED) {
-            ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
-        }
 
         BottomNavigationView bottomNav = findViewById(R.id.bottomNavigation);
         loadFragment(new HomeFragment());
@@ -178,47 +172,38 @@ public class DashBoardActivity extends AppCompatActivity {
         }
     }
 
-    private void checkLocationPermissionAndStartUpdates() {
-        if (ContextCompat.checkSelfPermission(this, Manifest.permission.ACCESS_FINE_LOCATION) == PackageManager.PERMISSION_GRANTED) {
-            Log.d(TAG, "Location permission already granted. Starting updates.");
-            startLocationUpdates();
-        } else if (ActivityCompat.shouldShowRequestPermissionRationale(this, Manifest.permission.ACCESS_FINE_LOCATION)) {
-            new AlertDialog.Builder(this)
-                    .setTitle("Location Permission Needed")
-                    .setMessage("This app needs the Location permission to share your location during an SOS and update your position for nearby alerts.")
-                    .setPositiveButton("OK", (dialog, which) -> requestLocationPermission())
-                    .create()
-                    .show();
-        } else {
-            requestLocationPermission();
-        }
-    }
-
-    private void requestLocationPermission() {
-        ActivityCompat.requestPermissions(this,
-                new String[]{Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION},
-                LOCATION_PERMISSION_CODE);
-    }
-
     @Override
     public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if (requestCode == LOCATION_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "Location permission granted by user.");
-                startLocationUpdates();
-            } else {
-                Log.w(TAG, "Location permission denied by user.");
-                Toast.makeText(this, "Location permission is required for SOS features.", Toast.LENGTH_LONG).show();
+
+        if (requestCode == ALL_PERMISSIONS_CODE) {
+            boolean locationGranted = false;
+            boolean smsGranted = false;
+
+            for (int i = 0; i < permissions.length; i++) {
+                if (permissions[i].equals(Manifest.permission.ACCESS_FINE_LOCATION) && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    locationGranted = true;
+                } else if (permissions[i].equals(Manifest.permission.SEND_SMS) && grantResults[i] == PackageManager.PERMISSION_GRANTED) {
+                    smsGranted = true;
+                }
             }
-        }
-        if (requestCode == SMS_PERMISSION_CODE) {
-            if (grantResults.length > 0 && grantResults[0] == PackageManager.PERMISSION_GRANTED) {
-                Log.d(TAG, "SMS permission granted by user.");
-                Toast.makeText(this, "SMS permission granted. You may need to trigger SOS again.", Toast.LENGTH_LONG).show();
+
+            if (locationGranted) {
+                Log.d(TAG, "Location permission granted via combined request.");
+                startLocationUpdates(); // Start updates now that permission is granted
             } else {
-                Log.w(TAG, "SMS permission denied by user.");
-                Toast.makeText(this, "SMS permission is required to send SOS messages.", Toast.LENGTH_LONG).show();
+                Log.w(TAG, "Location permission denied via combined request.");
+                // Show a more persistent message or disable location-dependent features
+                Toast.makeText(this, "Location permission is required for SOS location sharing.", Toast.LENGTH_LONG).show();
+            }
+
+            if (smsGranted) {
+                Log.d(TAG, "SMS permission granted via combined request.");
+                Toast.makeText(this, "SMS permission granted.", Toast.LENGTH_SHORT).show();
+            } else {
+                Log.w(TAG, "SMS permission denied via combined request.");
+                // Show a more persistent message or disable SMS feature
+                Toast.makeText(this, "SMS permission is required for SOS message alerts.", Toast.LENGTH_LONG).show();
             }
         }
     }
@@ -226,7 +211,7 @@ public class DashBoardActivity extends AppCompatActivity {
     @Override
     protected void onStart() {
         super.onStart();
-        checkLocationPermissionAndStartUpdates();
+        checkAndRequestPermissions(); // Call the new consolidated method
     }
 
     @Override
@@ -247,6 +232,35 @@ public class DashBoardActivity extends AppCompatActivity {
                     Log.d(TAG, "Location removed successfully on destroy for user: " + key);
                 }
             });
+        }
+    }
+
+    // New method to check and request permissions
+    private void checkAndRequestPermissions() {
+        String fineLocationPermission = Manifest.permission.ACCESS_FINE_LOCATION;
+        String smsPermission = Manifest.permission.SEND_SMS;
+
+        boolean locationPermissionGranted = ContextCompat.checkSelfPermission(this, fineLocationPermission) == PackageManager.PERMISSION_GRANTED;
+        boolean smsPermissionGranted = ContextCompat.checkSelfPermission(this, smsPermission) == PackageManager.PERMISSION_GRANTED;
+
+        java.util.List<String> permissionsToRequest = new java.util.ArrayList<>();
+
+        if (!locationPermissionGranted) {
+            permissionsToRequest.add(fineLocationPermission);
+        }
+        if (!smsPermissionGranted) {
+            permissionsToRequest.add(smsPermission);
+        }
+
+        if (!permissionsToRequest.isEmpty()) {
+            Log.d(TAG, "Requesting permissions: " + permissionsToRequest);
+            ActivityCompat.requestPermissions(this,
+                    permissionsToRequest.toArray(new String[0]),
+                    ALL_PERMISSIONS_CODE);
+        } else {
+            // All permissions already granted
+            Log.d(TAG, "All necessary permissions already granted.");
+            startLocationUpdates(); // Start location updates directly
         }
     }
 
@@ -346,15 +360,17 @@ public class DashBoardActivity extends AppCompatActivity {
                 String locationUrl = "https://maps.google.com/?q=" + latestLocation.getLatitude() + "," + latestLocation.getLongitude();
                 String finalMessage = messageBody + "\nMy current location: " + locationUrl;
 
-                // Check permission and send
+                // Check permission and send (Request logic removed)
                 if (ContextCompat.checkSelfPermission(this, Manifest.permission.SEND_SMS) == PackageManager.PERMISSION_GRANTED) {
                     sendSmsToContacts(contacts, finalMessage);
                 } else {
-                    Log.w(TAG, "SMS permission not granted. Requesting permission.");
-                    ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
-                    // Store necessary info to send SMS later if permission granted in onRequestPermissionsResult?
-                    // This part needs careful handling for a robust solution.
-                    Toast.makeText(this, "SMS Permission needed to send alerts.", Toast.LENGTH_LONG).show();
+                    // Permission not granted, just log and inform user (request happens in onStart)
+                    Log.w(TAG, "SMS permission not granted. Cannot send SOS via SMS.");
+                    Toast.makeText(this, "SMS Permission not granted. Cannot send SMS alerts.", Toast.LENGTH_LONG).show();
+                    // ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.SEND_SMS}, SMS_PERMISSION_CODE);
+                    // // Store necessary info to send SMS later if permission granted in onRequestPermissionsResult?
+                    // // This part needs careful handling for a robust solution.
+                    // Toast.makeText(this, "SMS Permission needed to send alerts.", Toast.LENGTH_LONG).show();
                 }
             } else {
                 Log.w(TAG, "Send SMS preference is true, but no contacts are saved in settings.");

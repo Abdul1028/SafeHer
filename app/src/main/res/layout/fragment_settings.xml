@@ -1,3 +1,4 @@
+<?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
@@ -20,7 +21,7 @@
             android:textSize="16sp"
             android:textColor="@color/black"
             android:layout_marginBottom="24dp"
-            android:visibility="gone" /> <!-- Initially hidden -->
+            android:visibility="gone" />
 
         <!-- Emergency Contacts Section -->
         <TextView
@@ -58,7 +59,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:layout_marginBottom="24dp" /> <!-- Increased bottom margin -->
+            android:layout_marginBottom="24dp" />
 
         <!-- SOS Message Section -->
         <TextView
@@ -160,7 +161,7 @@
             android:textColor="@color/purple"
             app:strokeColor="@color/purple"
             app:cornerRadius="8dp"
-            android:visibility="gone"/> <!-- Initially hidden -->
+            android:visibility="gone"/>
 
     </LinearLayout>
 </ScrollView>

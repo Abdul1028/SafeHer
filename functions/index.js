@@ -10,9 +10,10 @@
 const functions = require("firebase-functions");
 const admin = require("firebase-admin");
 const GeoFire = require("geofire").GeoFire; // Use .GeoFire for constructor
+const { onValueCreated } = require("firebase-functions/v2/database"); // Import v2 trigger
 
 // Create and deploy your first functions
-// https://firebase.google.com/docs/functions/get-started
+https://firebase.google.com/docs/functions/get-started
 
 // exports.helloWorld = onRequest((request, response) => {
 //   logger.info("Hello logs!", {structuredData: true});
@@ -32,21 +33,51 @@ const NEARBY_RADIUS_KM = 1;
  * Triggered when a new SOS alert is created in /sos_alerts.
  * Finds nearby users using GeoFire and sends them an FCM notification.
  */
-exports.notifyNearbyUsersOnSos = functions.database
-  .ref('/sos_alerts/{alertId}')
-  .onCreate(async (snapshot, context) => {
-    const sosData = snapshot.val();
-    const alertId = context.params.alertId;
+exports.notifyNearbyUsersOnSos = onValueCreated(
+  "/sos_alerts/{alertId}",
+  async (event) => {
+    // ---- VERY FIRST LOG ----
+    console.log(`Function notifyNearbyUsersOnSos triggered for event ID: ${event.id}`);
+    // ------------------------
 
+    // Log the entire event object to understand its structure
+    console.log("Received event:", JSON.stringify(event, null, 2));
+
+    // Get the data that was created.
+    // Based on logs, data is directly in event.data, not event.data.after
+    const sosData = event.data;
+    const alertId = event.params.alertId;
+
+    // Check if sosData exists (it should based on logs, but good practice)
     if (!sosData) {
-      console.error(`SOS data missing for alertId: ${alertId}`);
-      return null;
+        console.error(`SOS data (event.data) is missing or null for alertId: ${alertId}. Event:`, JSON.stringify(event, null, 2));
+        return null; // Exit if data is missing
     }
 
-    const { lat, lng, user_id: sosUserId } = sosData;
+    // Log the details of the created alert
+    console.log(`New SOS Alert Created - ID: ${alertId}, Data:`, JSON.stringify(sosData.val(), null, 2));
+
+    // Log sosData raw structure before destructuring
+    console.log('sosData (DataSnapshot) before val():', sosData);
+
+    // Get the plain JavaScript object from the snapshot
+    const plainData = sosData.val();
+    console.log('Plain data object after val():', plainData);
+
+    // Check if plainData exists after calling val()
+    if (!plainData) {
+        console.error(`Data retrieved from snapshot was null or undefined for alertId: ${alertId}.`);
+        return null;
+    }
+
+    // Destructure from the plain data object
+    const { lat, lng, user_id: sosUserId } = plainData;
+
+    // Log values immediately after destructuring
+    console.log(`Values after destructuring - lat: ${lat}, lng: ${lng}, sosUserId: ${sosUserId}`);
 
     if (lat == null || lng == null || !sosUserId) {
-      console.error(`Invalid SOS data for alertId: ${alertId}`, sosData);
+      console.error(`Invalid SOS data after destructuring - lat: ${lat}, lng: ${lng}, sosUserId: ${sosUserId}`, plainData);
       return null;
     }
 
@@ -91,7 +122,7 @@ exports.notifyNearbyUsersOnSos = functions.database
 
       nearbyUserPromises.push(promise);
     });
-
+    
     // Listener for when the GeoQuery is ready (all initial keys loaded)
     // We need this to know when to stop listening and await results
     return new Promise((resolve, reject) => {
@@ -123,6 +154,8 @@ exports.notifyNearbyUsersOnSos = functions.database
             reject(new Error(`GeoQuery failed: ${error}`)); // Reject the main promise
         });
     });
+
+    // --- End of Re-enabled Logic ---
   });
 
 /**
