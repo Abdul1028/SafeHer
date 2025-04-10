@@ -14,43 +14,35 @@
         android:padding="16dp">
 
         <!-- Profile Header -->
-        <com.google.android.material.imageview.ShapeableImageView
-            android:id="@+id/profileImageView"
-            android:layout_width="100dp"
-            android:layout_height="100dp"
+        <TextView
+            android:id="@+id/profileNameTextView"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
             android:layout_marginTop="16dp"
-            android:src="@drawable/baseline_person_24"
-            android:scaleType="centerCrop"
-            app:shapeAppearanceOverlay="@style/ShapeAppearance.MaterialComponents.SmallComponent"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
+            android:textColor="@color/black"
+            android:gravity="center_horizontal"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toTopOf="parent"
-            app:strokeColor="@color/purple" 
-            app:strokeWidth="2dp"/>
-
-        <TextView
-            android:id="@+id/profileNameTextView"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_marginTop="16dp"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Headline6"
-            android:textColor="@color/black"
-            app:layout_constraintEnd_toEndOf="@id/profileImageView"
-            app:layout_constraintStart_toStartOf="@id/profileImageView"
-            app:layout_constraintTop_toBottomOf="@id/profileImageView"
             tools:text="User Name" />
 
         <TextView
             android:id="@+id/profileEmailTextView"
-            android:layout_width="wrap_content"
+            android:layout_width="0dp"
             android:layout_height="wrap_content"
             android:layout_marginTop="4dp"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:gravity="center_horizontal"
             android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-            app:layout_constraintEnd_toEndOf="@id/profileNameTextView"
-            app:layout_constraintStart_toStartOf="@id/profileNameTextView"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
             app:layout_constraintTop_toBottomOf="@id/profileNameTextView"
             tools:text="user.email@example.com" />
-q
+
         <!-- Personal Info Card -->
         <com.google.android.material.card.MaterialCardView
             android:id="@+id/personalInfoCard"
@@ -77,7 +69,7 @@ q
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
                     android:layout_marginBottom="12dp"/>
 
-                <!-- Example Fields -->
+                <!-- Fields for DOB and Blood Group -->
                 <TextView
                     android:id="@+id/profileDobLabel"
                     android:layout_width="wrap_content"
@@ -90,7 +82,7 @@ q
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="8dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    tools:text="01/01/1990" />
+                    tools:text="Not Set" />
 
                 <TextView
                     android:id="@+id/profileBloodLabel"
@@ -104,7 +96,7 @@ q
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
-                    tools:text="O+" />
+                    tools:text="Not Set" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/editProfileButton"
@@ -112,7 +104,7 @@ q
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:text="Edit Profile" />
+                    android:text="Add Profile Info" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
@@ -150,8 +142,7 @@ q
                     android:layout_height="wrap_content"
                     android:layout_marginBottom="16dp"
                     android:textAppearance="@style/TextAppearance.MaterialComponents.Body2"
-                    tools:text="Contact 1 Name
-Contact 2 Name" />
+                    tools:text="Manage contacts in Settings" />
 
                 <com.google.android.material.button.MaterialButton
                     android:id="@+id/manageContactsButton"
@@ -159,25 +150,77 @@ Contact 2 Name" />
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
                     android:layout_gravity="end"
-                    android:text="Manage Contacts" />
+                    android:text="Go to Settings" />
 
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
-         <!-- App Version Info -->
+        <!-- FCM Token and Location Info -->
         <TextView
-            android:id="@+id/appVersionTextView"
+            android:id="@+id/labelFcmToken"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
             android:layout_marginTop="24dp"
+            android:text="FCM Token:"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/emergencyContactsCard" />
+
+        <TextView
+            android:id="@+id/textViewFcmToken"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Loading..."
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textIsSelectable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/labelFcmToken" />
+
+        <TextView
+            android:id="@+id/labelLatestLocation"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginTop="16dp"
+            android:text="Last Saved Location:"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium"
+            android:textStyle="bold"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/textViewFcmToken" />
+
+        <TextView
+            android:id="@+id/textViewLatestLocation"
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_marginStart="16dp"
+            android:layout_marginEnd="16dp"
+            android:layout_marginTop="8dp"
+            android:text="Loading..."
+            android:textAppearance="@style/TextAppearance.AppCompat.Small"
+            android:textIsSelectable="true"
+            app:layout_constraintEnd_toEndOf="parent"
+            app:layout_constraintStart_toStartOf="parent"
+            app:layout_constraintTop_toBottomOf="@id/labelLatestLocation" />
+
+        <!-- Logout Button -->
+        <Button
+            android:id="@+id/buttonLogout"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_marginTop="32dp"
             android:layout_marginBottom="16dp"
-            android:textAppearance="@style/TextAppearance.MaterialComponents.Caption"
-            tools:text="App Version 1.0.0"
+            android:text="Logout"
             app:layout_constraintBottom_toBottomOf="parent"
             app:layout_constraintEnd_toEndOf="parent"
             app:layout_constraintStart_toStartOf="parent"
-            app:layout_constraintTop_toBottomOf="@id/emergencyContactsCard"
-            app:layout_constraintVertical_bias="1.0" />
+            app:layout_constraintTop_toBottomOf="@id/textViewLatestLocation"
+            app:layout_constraintVertical_bias="1.0"/>
 
     </androidx.constraintlayout.widget.ConstraintLayout>
 </androidx.core.widget.NestedScrollView>
