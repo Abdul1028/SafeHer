@@ -13,7 +13,7 @@
         android:layout_width="0dp"
         android:layout_height="180dp"
         android:scaleType="fitXY"
-        android:src="@drawable/register_banner"
+        android:src="@drawable/dashboard_banner"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
         app:layout_constraintTop_toTopOf="parent"
@@ -45,7 +45,175 @@
         app:layout_constraintStart_toStartOf="@id/welcomeText"
         app:layout_constraintTop_toBottomOf="@id/welcomeText" />
 
-    <!-- Scrollable Content Area -->
+    <!-- Horizontal ScrollView for Helpline Numbers -->
+    <HorizontalScrollView
+        android:id="@+id/helplineScroll"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content" 
+        android:layout_marginTop="16dp"
+        android:clipToPadding="false"
+        android:paddingHorizontal="8dp" 
+        android:scrollbars="none"
+        app:layout_constraintEnd_toEndOf="parent"
+        app:layout_constraintStart_toStartOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/subtitleText">
+
+        <LinearLayout
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:orientation="horizontal"
+            android:layout_marginTop="60dp"
+            android:paddingVertical="10dp">
+
+            <!-- Women Helpline Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardWomenHelpline"
+                android:layout_width="180dp" 
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/baseline_support_agent_24"
+                        app:tint="#E91E63"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Women Helpline"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:textColor="#333333"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1091 / 181"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Police Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardPolice"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/baseline_local_police_24"
+                        app:tint="#2196F3"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Police"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:textColor="#333333"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="100 / 112"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Child Helpline Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardChildHelpline"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/baseline_security_24"
+                        app:tint="#FF9800"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Child Helpline"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:textColor="#333333"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1098"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+            <!-- Cyber Crime Card -->
+            <com.google.android.material.card.MaterialCardView
+                android:id="@+id/cardCyberCrime"
+                android:layout_width="180dp"
+                android:layout_height="wrap_content"
+                android:layout_marginStart="8dp"
+                android:layout_marginEnd="8dp"
+                app:cardCornerRadius="12dp"
+                app:cardElevation="4dp">
+                <LinearLayout
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:padding="16dp"
+                    android:gravity="center_horizontal">
+                    <ImageView
+                        android:layout_width="40dp"
+                        android:layout_height="40dp"
+                        android:src="@drawable/baseline_security_24"
+                        app:tint="#607D8B"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:layout_marginTop="8dp"
+                        android:text="Cyber Crime"
+                        android:textStyle="bold"
+                        android:textAlignment="center"
+                        android:textColor="#333333"/>
+                    <TextView
+                        android:layout_width="wrap_content"
+                        android:layout_height="wrap_content"
+                        android:text="1930"
+                        android:textColor="#666666"/>
+                </LinearLayout>
+            </com.google.android.material.card.MaterialCardView>
+
+        </LinearLayout>
+    </HorizontalScrollView>
+
+    <!-- Scrollable Other Features Area -->
     <androidx.core.widget.NestedScrollView
         android:id="@+id/scrollableContent"
         android:layout_width="0dp"
@@ -55,173 +223,24 @@
         app:layout_constraintBottom_toBottomOf="parent"
         app:layout_constraintEnd_toEndOf="parent"
         app:layout_constraintStart_toStartOf="parent"
-        app:layout_constraintTop_toBottomOf="@id/headerWave"> 
+        app:layout_constraintTop_toBottomOf="@id/helplineScroll"> 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:orientation="vertical"
-            android:paddingBottom="16dp"> 
-
-            <!-- Horizontal ScrollView for Emergency Contacts -->
-            <HorizontalScrollView
-                android:id="@+id/emergencyContactsScroll"
-                android:layout_width="match_parent"
-                android:layout_height="150dp" 
-                android:clipToPadding="false"
-                android:paddingHorizontal="8dp" 
-                android:scrollbars="none">
-
-                <LinearLayout
-                    android:layout_width="wrap_content"
-                    android:layout_height="match_parent"
-                    android:orientation="horizontal"
-                    android:paddingVertical="8dp"> 
-
-                    <!-- Emergency Contact Card 1 -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="280dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="4dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="#9C27B0" 
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:padding="16dp">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Jane" 
-                                    android:textColor="#FFFFFF"
-                                    android:textSize="20sp"
-                                    android:textStyle="bold" />
-
-                                <LinearLayout
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:orientation="horizontal">
-
-                                    <ImageView
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        android:layout_marginEnd="8dp"
-                                        android:background="@drawable/circle_background"
-                                        android:padding="6dp"
-                                        android:src="@drawable/baseline_person_24"
-                                        app:tint="@color/white" /> 
-
-                                    <ImageView
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        android:layout_marginEnd="8dp"
-                                        android:background="@drawable/circle_background"
-                                        android:padding="6dp"
-                                        android:src="@drawable/baseline_person_24"
-                                        app:tint="@color/white" />
-
-                                    <ImageView
-                                        android:layout_width="32dp"
-                                        android:layout_height="32dp"
-                                        android:background="@drawable/circle_background"
-                                        android:padding="6dp"
-                                        android:src="@drawable/baseline_person_24"
-                                        app:tint="@color/white" />
-                                </LinearLayout>
-                            </LinearLayout>
-
-                            <ImageView
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_marginStart="8dp"
-                                android:src="@drawable/logo"
-                                app:tint="@color/white"/> 
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Emergency Contact Card 2 -->
-                    <com.google.android.material.card.MaterialCardView
-                        android:layout_width="280dp"
-                        android:layout_height="match_parent"
-                        android:layout_marginStart="8dp"
-                        android:layout_marginEnd="8dp"
-                        app:cardCornerRadius="16dp"
-                        app:cardElevation="4dp">
-
-                        <LinearLayout
-                            android:layout_width="match_parent"
-                            android:layout_height="match_parent"
-                            android:background="#673AB7" 
-                            android:gravity="center_vertical"
-                            android:orientation="horizontal"
-                            android:padding="16dp">
-
-                            <LinearLayout
-                                android:layout_width="0dp"
-                                android:layout_height="wrap_content"
-                                android:layout_weight="1"
-                                android:orientation="vertical">
-
-                                <TextView
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:text="Police" 
-                                    android:textColor="#FFFFFF"
-                                    android:textSize="20sp"
-                                    android:textStyle="bold" />
-
-                                <LinearLayout
-                                    android:layout_width="wrap_content"
-                                    android:layout_height="wrap_content"
-                                    android:layout_marginTop="8dp"
-                                    android:orientation="horizontal">
-                                    <!-- Placeholder for icons if needed -->
-                                    <TextView
-                                        android:layout_width="wrap_content"
-                                        android:layout_height="wrap_content"
-                                        android:text="Emergency Services"
-                                        android:textColor="@color/white"
-                                        android:textSize="12sp"/>
-
-                                </LinearLayout>
-                            </LinearLayout>
-
-                            <ImageView
-                                android:layout_width="60dp"
-                                android:layout_height="60dp"
-                                android:layout_marginStart="8dp"
-                                android:src="@drawable/logo"
-                                app:tint="@color/white"/>
-                        </LinearLayout>
-                    </com.google.android.material.card.MaterialCardView>
-
-                    <!-- Add more cards as needed -->
-
-                </LinearLayout>
-            </HorizontalScrollView>
+            android:paddingHorizontal="8dp" 
+            android:paddingBottom="16dp">
 
             <!-- Other Features Text -->
             <TextView
                 android:id="@+id/otherFeaturesText"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_marginStart="16dp"
-                android:layout_marginTop="24dp" 
+                android:layout_marginStart="8dp"
+                android:layout_marginTop="8dp" 
                 android:text="Other features"
-                android:textColor="#333333" 
+                android:textColor="#333333"
                 android:textSize="18sp"
                 android:textStyle="bold" />
 
@@ -230,44 +249,40 @@
                 android:id="@+id/featuresGrid"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_marginHorizontal="8dp" 
                 android:layout_marginTop="8dp"
-                android:alignmentMode="alignMargins" 
+                android:alignmentMode="alignMargins"
                 android:columnCount="2"
                 android:rowCount="3"
-                android:useDefaultMargins="true"> 
+                android:useDefaultMargins="true">
 
                 <!-- Emergency Call Card -->
                 <com.google.android.material.card.MaterialCardView
                     android:id="@+id/cardEmergencyCall"
                     android:layout_width="0dp"
-                    android:layout_height="wrap_content" 
+                    android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
-                    android:layout_rowWeight="1" 
+                    android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
-                        android:layout_height="wrap_content" 
+                        android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/baseline_call_24" 
-                            app:tint="#E91E63" /> 
-
+                            android:src="@drawable/baseline_call_24"
+                            app:tint="#E91E63" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
                             android:layout_marginTop="8dp"
                             android:text="Emergency Call"
-                            android:textAlignment="center" 
+                            android:textAlignment="center"
                             android:textColor="#333333"
-                            android:textSize="14sp" 
+                            android:textSize="14sp"
                             android:textStyle="bold" />
                     </LinearLayout>
                 </com.google.android.material.card.MaterialCardView>
@@ -281,20 +296,17 @@
                     android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/baseline_my_location_24" 
+                            android:src="@drawable/baseline_my_location_24"
                             app:tint="#4CAF50" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -316,20 +328,17 @@
                     android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/baseline_route_24" 
-                            app:tint="#2196F3" /> 
-
+                            android:src="@drawable/baseline_route_24"
+                            app:tint="#2196F3" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -351,20 +360,17 @@
                     android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/baseline_whatshot_24" 
+                            android:src="@drawable/baseline_whatshot_24"
                             app:tint="#FF9800" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -386,20 +392,17 @@
                     android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
-                            android:src="@drawable/baseline_forum_24" 
+                            android:src="@drawable/baseline_forum_24"
                             app:tint="#607D8B" />
-
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -421,20 +424,17 @@
                     android:layout_rowWeight="1"
                     app:cardCornerRadius="12dp"
                     app:cardElevation="4dp">
-
                     <LinearLayout
                         android:layout_width="match_parent"
                         android:layout_height="wrap_content"
                         android:gravity="center_horizontal"
                         android:orientation="vertical"
                         android:padding="16dp">
-
                         <ImageView
                             android:layout_width="40dp"
                             android:layout_height="40dp"
                             android:src="@drawable/baseline_contact_phone_24"
-                            app:tint="#795548" /> 
-
+                            app:tint="#795548" />
                         <TextView
                             android:layout_width="wrap_content"
                             android:layout_height="wrap_content"
@@ -449,7 +449,7 @@
 
             </GridLayout>
 
-        </LinearLayout> 
+        </LinearLayout>
 
     </androidx.core.widget.NestedScrollView>
 
