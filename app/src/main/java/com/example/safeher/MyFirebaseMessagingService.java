@@ -8,6 +8,9 @@ import android.content.Intent;
 import android.os.Build;
 import android.util.Log;
 import android.widget.RemoteViews;
+import android.widget.Toast;
+import android.os.Handler;
+import android.os.Looper;
 
 import androidx.annotation.NonNull;
 import androidx.core.app.NotificationCompat;
@@ -74,25 +77,27 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
     public void onMessageReceived(@NonNull RemoteMessage remoteMessage) {
         super.onMessageReceived(remoteMessage);
 
-        // Log entire message details for debugging
+        Log.d(TAG, "---- FCM Message Received ----");
         Log.d(TAG, "From: " + remoteMessage.getFrom());
 
-        // Check if message contains a data payload.
         Map<String, String> data = remoteMessage.getData();
         Log.d(TAG, "Message Data payload: " + data);
 
-        // Check if message contains a notification payload.
         if (remoteMessage.getNotification() != null) {
-            Log.d(TAG, "Message Notification Body: " + remoteMessage.getNotification().getBody());
+            Log.d(TAG, "Message Notification Body (if present): " + remoteMessage.getNotification().getBody());
         }
 
-        // Check if it's our SOS alert type from the data payload
-        if (data != null && "SOS_ALERT".equals(data.get("type"))) {
-            Log.i(TAG, "Received SOS Alert message.");
-            handleSosAlert(data);
+        // Simplified Check: Assuming any message with lat/lng is an SOS alert for now
+        // Remove the 'type' check temporarily for debugging if Cloud Function isn't sending it
+        if (data != null && data.containsKey("lat") && data.containsKey("lng")) {
+             Log.i(TAG, "Potential SOS Alert message detected based on lat/lng presence.");
+             // Ensure this runs on the main thread if showing Toasts
+             new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                 Toast.makeText(getApplicationContext(), "SOS Message Received", Toast.LENGTH_SHORT).show();
+             });
+             handleSosAlert(data);
         } else {
-            Log.d(TAG, "Received other type of FCM message, ignoring for SOS.");
-            // Handle other types of messages if needed
+            Log.d(TAG, "Received FCM message without lat/lng data, ignoring for SOS.");
         }
     }
 
@@ -101,74 +106,86 @@ public class MyFirebaseMessagingService extends FirebaseMessagingService {
      * @param data The data payload from the FCM message.
      */
     private void handleSosAlert(Map<String, String> data) {
+        Log.d(TAG, "---- handleSosAlert START ----");
         String title = data.getOrDefault("title", "SOS Alert Nearby!");
         String body = data.getOrDefault("body", "Someone needs help near you. Tap for details.");
         String latStr = data.get("lat");
         String lngStr = data.get("lng");
+        Log.d(TAG, "Data received: title="+title+", body="+body+", latStr="+latStr+", lngStr="+lngStr);
 
         if (latStr == null || lngStr == null) {
-            Log.e(TAG, "SOS Alert data missing lat/lng.");
+            Log.e(TAG, "SOS Alert data missing lat/lng. Cannot proceed.");
             return;
         }
 
+        double lat = 0.0, lng = 0.0;
         try {
-            double lat = Double.parseDouble(latStr);
-            double lng = Double.parseDouble(lngStr);
+            lat = Double.parseDouble(latStr);
+            lng = Double.parseDouble(lngStr);
+            Log.d(TAG, "Parsed coordinates: lat=" + lat + ", lng=" + lng);
 
-            // Intent to launch when notification is tapped
-            // TODO: Create SosMapActivity.class
+            // Intent creation
+            Log.d(TAG, "Creating Intent for SosMapActivity.");
             Intent intent = new Intent(this, SosMapActivity.class);
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK);
             intent.putExtra("sos_alert_lat", lat);
             intent.putExtra("sos_alert_lng", lng);
-            // Potentially add more flags or data if needed
+            Log.d(TAG, "Intent created with extras: lat=" + intent.getDoubleExtra("sos_alert_lat", -1) + ", lng=" + intent.getDoubleExtra("sos_alert_lng", -1));
 
-            // Use FLAG_IMMUTABLE or FLAG_MUTABLE based on Android version requirements
+            // PendingIntent creation
+            Log.d(TAG, "Creating PendingIntent.");
             int pendingIntentFlags = PendingIntent.FLAG_ONE_SHOT;
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S) {
-                pendingIntentFlags |= PendingIntent.FLAG_IMMUTABLE; // Use IMMUTABLE for S+
+                pendingIntentFlags |= PendingIntent.FLAG_IMMUTABLE;
             } else {
-                pendingIntentFlags |= PendingIntent.FLAG_UPDATE_CURRENT; // Or keep UPDATE_CURRENT if needed pre-S
+                pendingIntentFlags |= PendingIntent.FLAG_UPDATE_CURRENT;
             }
-
             PendingIntent pendingIntent = PendingIntent.getActivity(this, 0 /* Request code */, intent,
                     pendingIntentFlags);
+            Log.d(TAG, "PendingIntent created: " + (pendingIntent != null));
 
-            // Build the notification
+            // Notification building
+            Log.d(TAG, "Building notification.");
             NotificationCompat.Builder notificationBuilder = new NotificationCompat.Builder(this, SOS_CHANNEL_ID)
                     .setSmallIcon(R.drawable.baseline_sos_24) // Ensure you have this drawable
                     .setContentTitle(title)
                     .setContentText(body)
-                    .setAutoCancel(true) // Dismiss notification when tapped
-                    .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI) // Default sound
-                    .setPriority(NotificationCompat.PRIORITY_HIGH) // High priority for alerts
-                    .setContentIntent(pendingIntent); // Set the intent to fire when tapped
+                    .setAutoCancel(true)
+                    .setSound(android.provider.Settings.System.DEFAULT_NOTIFICATION_URI)
+                    .setPriority(NotificationCompat.PRIORITY_HIGH)
+                    .setContentIntent(pendingIntent);
+            Log.d(TAG, "Notification builder prepared.");
 
             NotificationManager notificationManager =
                     (NotificationManager) getSystemService(Context.NOTIFICATION_SERVICE);
 
-            // Create the Notification Channel for Android 8.0 (Oreo) and above
+            // Channel Creation (O+)
             if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-                NotificationChannel channel = new NotificationChannel(SOS_CHANNEL_ID,
-                        "SOS Alerts", // User-visible name of the channel
+                 Log.d(TAG, "Ensuring notification channel exists (Oreo+).");
+                 NotificationChannel channel = new NotificationChannel(SOS_CHANNEL_ID,
+                        "SOS Alerts",
                         NotificationManager.IMPORTANCE_HIGH);
-                channel.setDescription("Notifications for nearby SOS alerts"); // User-visible description
-                // Configure channel properties (optional)
-                // channel.enableLights(true);
-                // channel.setLightColor(Color.RED);
-                // channel.enableVibration(true);
+                channel.setDescription("Notifications for nearby SOS alerts");
                 notificationManager.createNotificationChannel(channel);
             }
 
-            // Show the notification (use a unique ID, e.g., based on timestamp or a fixed one)
+            // Show Notification
             int notificationId = (int) System.currentTimeMillis();
+            Log.i(TAG, "Displaying notification with ID: " + notificationId);
             notificationManager.notify(notificationId, notificationBuilder.build());
-            Log.i(TAG, "SOS Alert notification displayed. ID: " + notificationId);
+            Log.d(TAG, "---- handleSosAlert END ----");
 
         } catch (NumberFormatException e) {
             Log.e(TAG, "Failed to parse lat/lng from SOS alert data", e);
+            // Ensure this runs on the main thread if showing Toasts
+             new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                 Toast.makeText(getApplicationContext(), "Error: Invalid location data in SOS.", Toast.LENGTH_LONG).show();
+             });
         } catch (Exception e) {
             Log.e(TAG, "Error displaying SOS notification", e);
+             new android.os.Handler(android.os.Looper.getMainLooper()).post(() -> {
+                 Toast.makeText(getApplicationContext(), "Error showing SOS notification.", Toast.LENGTH_LONG).show();
+             });
         }
     }
 } 
