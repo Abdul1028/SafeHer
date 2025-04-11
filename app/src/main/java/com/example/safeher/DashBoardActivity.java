@@ -41,6 +41,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import android.os.Build; // Import Build class
+import androidx.annotation.Nullable;
 
 public class DashBoardActivity extends AppCompatActivity {
     private static final String TAG = "DashBoardActivity";
@@ -103,6 +104,8 @@ public class DashBoardActivity extends AppCompatActivity {
                 selectedFragment = new ProfileFragment();
             } else if (itemId == R.id.nav_settings) {
                 selectedFragment = new SettingsFragment();
+            } else if (itemId==R.id.nav_alerts) {
+                selectedFragment = new AlertFragment();
             }
 
             // Load the selected fragment
@@ -482,5 +485,12 @@ public class DashBoardActivity extends AppCompatActivity {
         FragmentTransaction transaction = fragmentManager.beginTransaction();
         transaction.replace(R.id.fragment_container, fragment);
         transaction.commit();
+    }
+
+    // Getter method for fragments to access the latest known location
+    @Nullable
+    public Location getLatestLocation() {
+        Log.d(TAG, "getLatestLocation() called, returning: " + (latestLocation != null ? latestLocation.toString() : "null"));
+        return latestLocation;
     }
 }

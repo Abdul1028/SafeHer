@@ -239,6 +239,7 @@
 
                 <!-- Emergency Call Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardEmergencyCall"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content" 
                     android:layout_columnWeight="1"
@@ -273,6 +274,7 @@
 
                 <!-- Current Location Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardCurrentLocation"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
@@ -307,6 +309,7 @@
 
                 <!-- Safest Route Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardSafestRoute"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
@@ -341,6 +344,7 @@
 
                 <!-- Hotspots Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardHotspots"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
@@ -375,6 +379,7 @@
 
                 <!-- Forum Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardForum"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
@@ -409,6 +414,7 @@
 
                 <!-- Fake Call Card -->
                 <com.google.android.material.card.MaterialCardView
+                    android:id="@+id/cardFakeCall"
                     android:layout_width="0dp"
                     android:layout_height="wrap_content"
                     android:layout_columnWeight="1"
