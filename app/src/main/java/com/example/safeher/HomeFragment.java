@@ -271,7 +271,13 @@ public class HomeFragment extends Fragment {
             cardForum.setOnClickListener(v -> Toast.makeText(getContext(), "Forum Clicked", Toast.LENGTH_SHORT).show());
         }
         if (cardFakeCall != null) {
-            cardFakeCall.setOnClickListener(v -> Toast.makeText(getContext(), "Fake Call Clicked", Toast.LENGTH_SHORT).show());
+            cardFakeCall.setOnClickListener(v -> {
+                Log.d(TAG, "Fake Call card clicked.");
+                Intent fakeCallIntent = new Intent(getActivity(), FakeCallActivity.class);
+                // TODO: Optionally add extras like caller name/image later
+                // fakeCallIntent.putExtra("CALLER_NAME", "Work");
+                startActivity(fakeCallIntent);
+            });
         }
     }
 
