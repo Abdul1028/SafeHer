@@ -31,6 +31,13 @@ import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import android.location.Geocoder;
+import android.location.Address;
+import android.os.Handler;
+import android.os.Looper;
+import java.io.IOException;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 /**
  * A simple {@link Fragment} subclass.
@@ -59,6 +66,11 @@ public class AlertFragment extends Fragment {
     private Query userAlertsRef;
     private ValueEventListener alertsListener;
     private FirebaseAuth mAuth;
+
+    // Create a single background thread executor for geocoding
+    private static final ExecutorService geocodingExecutor = Executors.newSingleThreadExecutor();
+    // Handler to post results back to the main thread
+    private final Handler mainThreadHandler = new Handler(Looper.getMainLooper());
 
     public AlertFragment() {
         // Required empty public constructor
@@ -225,6 +237,7 @@ public class AlertFragment extends Fragment {
         private List<SosAlert> alerts;
         private SimpleDateFormat dateFormat;
         private android.content.Context context; // Context for launching intent
+        private Handler mainThreadHandler; // Add Handler reference
 
         AlertAdapter(List<SosAlert> alerts, android.content.Context context) {
             this.alerts = alerts;
@@ -232,6 +245,7 @@ public class AlertFragment extends Fragment {
              // Defensive check for locale
              Locale currentLocale = context != null ? context.getResources().getConfiguration().getLocales().get(0) : Locale.getDefault();
              this.dateFormat = new SimpleDateFormat("dd MMM yyyy, hh:mm a", currentLocale);
+             this.mainThreadHandler = new Handler(Looper.getMainLooper()); // Initialize Handler
         }
 
         @NonNull
@@ -239,12 +253,14 @@ public class AlertFragment extends Fragment {
         public AlertViewHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
             View view = LayoutInflater.from(parent.getContext())
                     .inflate(R.layout.list_item_alert, parent, false);
-            return new AlertViewHolder(view, context); // Pass context to ViewHolder
+            // Pass the handler to the ViewHolder
+            return new AlertViewHolder(view, context, mainThreadHandler);
         }
 
         @Override
         public void onBindViewHolder(@NonNull AlertViewHolder holder, int position) {
             SosAlert alert = alerts.get(position);
+            // Pass the handler when binding as well, or ensure it's set in constructor
             holder.bind(alert, dateFormat);
         }
 
@@ -257,11 +273,13 @@ public class AlertFragment extends Fragment {
             TextView timestampText;
             TextView locationText;
             Button viewMapButton;
-            android.content.Context context; // Store context
+            android.content.Context context;
+            Handler mainThreadHandler; // Add Handler reference
 
-            AlertViewHolder(@NonNull View itemView, android.content.Context context) {
+            AlertViewHolder(@NonNull View itemView, android.content.Context context, Handler handler) { // Receive Handler
                 super(itemView);
-                this.context = context; // Store context
+                this.context = context;
+                this.mainThreadHandler = handler; // Store Handler
                 timestampText = itemView.findViewById(R.id.textViewAlertTimestamp);
                 locationText = itemView.findViewById(R.id.textViewAlertLocation);
                 viewMapButton = itemView.findViewById(R.id.buttonViewOnMap);
@@ -269,20 +287,76 @@ public class AlertFragment extends Fragment {
 
             void bind(SosAlert alert, SimpleDateFormat formatter) {
                 timestampText.setText(formatter.format(new Date(alert.getTimestamp())));
-                locationText.setText(String.format(Locale.US, "Lat: %.4f, Lng: %.4f", alert.getLat(), alert.getLng()));
+
+                // Set placeholder text while geocoding
+                locationText.setText("Loading address...");
+
+                // Perform geocoding in the background
+                final double lat = alert.getLat();
+                final double lng = alert.getLng();
+                final TextView targetTextView = locationText; // Reference for the background task
+
+                geocodingExecutor.execute(() -> {
+                    String addressText = "Address not found"; // Default text
+                    if (context != null && Geocoder.isPresent()) {
+                        Geocoder geocoder = new Geocoder(context, Locale.getDefault());
+                        try {
+                            List<Address> addresses = geocoder.getFromLocation(lat, lng, 1); // Get 1 address
+                            if (addresses != null && !addresses.isEmpty()) {
+                                Address address = addresses.get(0);
+                                // Construct a short address (e.g., Street, Locality)
+                                StringBuilder sb = new StringBuilder();
+                                if (address.getThoroughfare() != null) { // Street
+                                    sb.append(address.getThoroughfare());
+                                }
+                                if (address.getSubLocality() != null) { // Neighborhood / Suburb
+                                    if (sb.length() > 0) sb.append(", ");
+                                    sb.append(address.getSubLocality());
+                                }
+                                if (address.getLocality() != null) { // City / Town
+                                    if (sb.length() > 0) sb.append(", ");
+                                    sb.append(address.getLocality());
+                                }
+
+                                if (sb.length() > 0) {
+                                    addressText = sb.toString();
+                                } else {
+                                    // Fallback if specific lines are null
+                                    addressText = address.getAddressLine(0) != null ? address.getAddressLine(0) : "Address details unavailable";
+                                }
+                                Log.d(TAG, "Geocoding success: " + addressText);
+                            } else {
+                                Log.w(TAG, "No address found by Geocoder for: " + lat + "," + lng);
+                            }
+                        } catch (IOException e) {
+                            Log.e(TAG, "Geocoder IOException for: " + lat + "," + lng, e);
+                            addressText = "Address lookup error";
+                        } catch (IllegalArgumentException illegalArgumentException) {
+                            Log.e(TAG, "Geocoder IllegalArgumentException (invalid lat/lng?): " + lat + "," + lng, illegalArgumentException);
+                            addressText = "Invalid coordinates";
+                        }
+                    } else {
+                         Log.w(TAG, "Context is null or Geocoder not present, cannot look up address.");
+                         addressText = "Address lookup unavailable";
+                    }
+
+                    // Update the TextView on the main thread using the stored handler
+                    final String finalAddressText = addressText;
+                    mainThreadHandler.post(() -> {
+                        if (getAdapterPosition() != RecyclerView.NO_POSITION) {
+                            targetTextView.setText(finalAddressText);
+                        }
+                    });
+                });
 
                 viewMapButton.setOnClickListener(v -> {
-                    if (context == null) return; // Safety check
-
-                    // Create Uri for map intent with marker
+                    if (context == null) return;
                     String geoUriString = String.format(Locale.US, "geo:%f,%f?q=%f,%f(SOS @ %s)",
                             alert.getLat(), alert.getLng(),
                             alert.getLat(), alert.getLng(),
-                            formatter.format(new Date(alert.getTimestamp()))); // Label with time
+                            formatter.format(new Date(alert.getTimestamp())));
                     Uri gmmIntentUri = Uri.parse(geoUriString);
                     Intent mapIntent = new Intent(Intent.ACTION_VIEW, gmmIntentUri);
-
-                    // Check if an app exists to handle this map intent
                     if (mapIntent.resolveActivity(context.getPackageManager()) != null) {
                         Log.i(TAG, "Launching map for alert: " + geoUriString);
                         context.startActivity(mapIntent);
