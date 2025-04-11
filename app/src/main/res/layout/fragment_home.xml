@@ -6,8 +6,6 @@
     android:layout_height="match_parent"
     android:background="@drawable/gradient_background">
 
-    <!-- Header Section with Purple Wave Design -->
-    <!-- Note: Consider using a View or MaterialShapeDrawable for the wave for better performance/scaling -->
     <ImageView
         android:id="@+id/headerWave"
         android:layout_width="0dp"

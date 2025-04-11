@@ -1,9 +1,12 @@
 package com.example.safeher;
+import static androidx.constraintlayout.helper.widget.MotionEffect.TAG;
+
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.net.Uri;
+import android.os.Build;
 import android.os.Bundle;
 import android.provider.ContactsContract;
 import android.util.Log;
@@ -16,6 +19,11 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.Spinner;
+import android.widget.ArrayAdapter;
+import android.widget.CompoundButton;
+import android.app.AlarmManager;
+import android.app.PendingIntent;
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
@@ -23,10 +31,12 @@ import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
 import com.google.android.material.button.MaterialButton;
+import com.google.android.material.materialswitch.MaterialSwitch;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseUser;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -35,15 +45,29 @@ public class SettingsFragment extends Fragment {
 
     private EditText messageBody;
     private CheckBox playSound, sendSMS, sendNotification;
+    private EditText editTextFakeCallerName;
     private Button saveButton;
     private MaterialButton selectContactsButton, signOutButton;
     private TextView userEmailTextView;
     private LinearLayout selectedContactsContainer;
+    private MaterialSwitch switchScheduleFakeCall;
+    private Spinner spinnerFakeCallInterval;
 
     private static final int PICK_CONTACT_REQUEST_1 = 1;
     private static final int PICK_CONTACT_REQUEST_2 = 2;
     private static final String PREFS_NAME = "SOSSettings";
     private static final String CONTACTS_KEY = "emergencyContacts";
+    private static final String FAKE_CALLER_NAME_KEY = "fakeCallerName";
+    private static final String FAKE_CALL_SCHEDULE_ENABLED_KEY = "fakeCallScheduleEnabled";
+    private static final String FAKE_CALL_INTERVAL_MS_KEY = "fakeCallIntervalMs";
+
+    private static final long INTERVAL_OFF = 0;
+    private static final long INTERVAL_1_MIN = 60 * 1000;
+    private static final long INTERVAL_5_MIN = 5 * 60 * 1000;
+    private static final long INTERVAL_10_MIN = 10 * 60 * 1000;
+
+    private static final List<Long> INTERVAL_VALUES = Arrays.asList(INTERVAL_OFF, INTERVAL_1_MIN, INTERVAL_5_MIN, INTERVAL_10_MIN);
+    private static final List<String> INTERVAL_NAMES = Arrays.asList("Off", "1 Minute", "5 Minutes", "10 Minutes");
 
     private Set<String> selectedContacts = new HashSet<>();
 
@@ -68,19 +92,30 @@ public class SettingsFragment extends Fragment {
         playSound = view.findViewById(R.id.playSound);
         sendSMS = view.findViewById(R.id.sendSMS);
         sendNotification = view.findViewById(R.id.sendNotification);
+        editTextFakeCallerName = view.findViewById(R.id.editTextFakeCallerName);
+        switchScheduleFakeCall = view.findViewById(R.id.switchScheduleFakeCall);
+        spinnerFakeCallInterval = view.findViewById(R.id.spinnerFakeCallInterval);
         saveButton = view.findViewById(R.id.saveButton);
         selectedContactsContainer = view.findViewById(R.id.selectedContactsContainer);
         selectContactsButton = view.findViewById(R.id.selectContactsButton);
         userEmailTextView = view.findViewById(R.id.userEmailTextView);
         signOutButton = view.findViewById(R.id.signOutButton);
 
+        setupIntervalSpinner();
         loadSettings();
         loadContacts();
         displaySelectedContacts();
 
         setupUserUI();
 
-        saveButton.setOnClickListener(v -> saveSettings());
+        switchScheduleFakeCall.setOnCheckedChangeListener((buttonView, isChecked) -> {
+            spinnerFakeCallInterval.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+            if (!isChecked) {
+                spinnerFakeCallInterval.setSelection(0);
+            }
+        });
+
+        saveButton.setOnClickListener(v -> saveSettingsAndSchedule());
 
         selectContactsButton.setOnClickListener(v -> openContactPicker());
 
@@ -254,11 +289,24 @@ public class SettingsFragment extends Fragment {
 
     private void loadSettings() {
         if (getContext() == null) return;
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        messageBody.setText(sharedPreferences.getString("messageBody", "Emergency! I need help! My location: [Location]"));
-        playSound.setChecked(sharedPreferences.getBoolean("playSound", true));
-        sendSMS.setChecked(sharedPreferences.getBoolean("sendSMS", true));
-        sendNotification.setChecked(sharedPreferences.getBoolean("sendNotification", true));
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        messageBody.setText(prefs.getString("messageBody", "Emergency! I need help!"));
+        playSound.setChecked(prefs.getBoolean("playSound", true));
+        sendSMS.setChecked(prefs.getBoolean("sendSMS", true));
+        sendNotification.setChecked(prefs.getBoolean("sendNotification", true));
+        editTextFakeCallerName.setText(prefs.getString(FAKE_CALLER_NAME_KEY, "Mom"));
+
+        boolean scheduleEnabled = prefs.getBoolean(FAKE_CALL_SCHEDULE_ENABLED_KEY, false);
+        long intervalMs = prefs.getLong(FAKE_CALL_INTERVAL_MS_KEY, INTERVAL_OFF);
+
+        switchScheduleFakeCall.setChecked(scheduleEnabled);
+        spinnerFakeCallInterval.setVisibility(scheduleEnabled ? View.VISIBLE : View.GONE);
+
+        int selectionIndex = INTERVAL_VALUES.indexOf(intervalMs);
+        if (selectionIndex < 0) {
+            selectionIndex = 0;
+        }
+        spinnerFakeCallInterval.setSelection(selectionIndex);
     }
 
     private void loadContacts() {
@@ -267,19 +315,39 @@ public class SettingsFragment extends Fragment {
         selectedContacts = new HashSet<>(sharedPreferences.getStringSet(CONTACTS_KEY, new HashSet<>()));
     }
 
-    private void saveSettings() {
+    private void saveSettingsAndSchedule() {
         if (getContext() == null) return;
-        SharedPreferences sharedPreferences = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
-        SharedPreferences.Editor editor = sharedPreferences.edit();
+        SharedPreferences prefs = getContext().getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        SharedPreferences.Editor editor = prefs.edit();
 
         editor.putString("messageBody", messageBody.getText().toString());
         editor.putBoolean("playSound", playSound.isChecked());
         editor.putBoolean("sendSMS", sendSMS.isChecked());
         editor.putBoolean("sendNotification", sendNotification.isChecked());
+        String fakeCaller = editTextFakeCallerName.getText().toString().trim();
+        editor.putString(FAKE_CALLER_NAME_KEY, fakeCaller.isEmpty() ? "Mom" : fakeCaller);
+
+        boolean scheduleEnabled = switchScheduleFakeCall.isChecked();
+        long intervalMs = INTERVAL_OFF;
+        if (scheduleEnabled) {
+            int selectedPosition = spinnerFakeCallInterval.getSelectedItemPosition();
+            if (selectedPosition >= 0 && selectedPosition < INTERVAL_VALUES.size()) {
+                intervalMs = INTERVAL_VALUES.get(selectedPosition);
+                if (intervalMs == INTERVAL_OFF) {
+                    scheduleEnabled = false;
+                }
+            }
+        }
+
+        editor.putBoolean(FAKE_CALL_SCHEDULE_ENABLED_KEY, scheduleEnabled);
+        editor.putLong(FAKE_CALL_INTERVAL_MS_KEY, intervalMs);
 
         editor.apply();
         saveContacts();
-        Toast.makeText(getContext(), "Settings saved!", Toast.LENGTH_SHORT).show();
+
+        scheduleOrCancelFakeCallAlarm(scheduleEnabled, intervalMs);
+
+        Toast.makeText(getContext(), "Settings saved successfully", Toast.LENGTH_SHORT).show();
     }
 
     private void saveContacts() {
@@ -314,6 +382,50 @@ public class SettingsFragment extends Fragment {
             intent.addFlags(Intent.FLAG_ACTIVITY_CLEAR_TOP | Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
             startActivity(intent);
             getActivity().finish();
+        }
+    }
+
+    private void setupIntervalSpinner() {
+        if (getContext() == null) return;
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(getContext(), android.R.layout.simple_spinner_item, INTERVAL_NAMES);
+        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+        spinnerFakeCallInterval.setAdapter(adapter);
+    }
+
+    private void scheduleOrCancelFakeCallAlarm(boolean enable, long intervalMs) {
+        if (getContext() == null) return;
+        Context context = getContext();
+        AlarmManager alarmManager = (AlarmManager) context.getSystemService(Context.ALARM_SERVICE);
+        Intent intent = new Intent(context, FakeCallAlarmReceiver.class);
+
+        int flags = PendingIntent.FLAG_UPDATE_CURRENT | PendingIntent.FLAG_IMMUTABLE;
+        PendingIntent pendingIntent = PendingIntent.getBroadcast(context, 0, intent, flags);
+
+        if (enable && intervalMs > 0 && alarmManager != null) {
+            long triggerAtMillis = System.currentTimeMillis() + intervalMs;
+
+            try {
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.S && !alarmManager.canScheduleExactAlarms()) {
+                    Log.w(TAG, "Exact alarm permission not granted. Cannot schedule precisely.");
+                    Toast.makeText(context, "Permission needed to schedule exact alarms.", Toast.LENGTH_LONG).show();
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                } else {
+                    alarmManager.setExactAndAllowWhileIdle(AlarmManager.RTC_WAKEUP, triggerAtMillis, pendingIntent);
+                    Log.i(TAG, "Scheduled fake call alarm for " + intervalMs + "ms from now.");
+                    Toast.makeText(context, "Fake call scheduled for " + INTERVAL_NAMES.get(INTERVAL_VALUES.indexOf(intervalMs)), Toast.LENGTH_SHORT).show();
+                }
+            } catch (SecurityException se) {
+                Log.e(TAG, "SecurityException scheduling exact alarm. Check permissions.", se);
+                Toast.makeText(context, "Could not schedule fake call due to permission issues.", Toast.LENGTH_LONG).show();
+            }
+        } else {
+            if (alarmManager != null) {
+                alarmManager.cancel(pendingIntent);
+                Log.i(TAG, "Cancelled existing fake call alarm.");
+                if (enable && intervalMs <= 0) {
+                } else if (!enable) {
+                }
+            }
         }
     }
 }

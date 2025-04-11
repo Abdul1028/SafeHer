@@ -1,110 +1,38 @@
 <?xml version="1.0" encoding="utf-8"?>
 <ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@drawable/gradient_background"
-    android:padding="16dp">
+    android:background="?attr/colorSurfaceContainer"
+    android:padding="16dp"
+    tools:context=".SettingsFragment">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:orientation="vertical"
-        android:padding="16dp">
+        android:orientation="vertical">
 
-        <!-- User Info Section -->
+        <!-- User Info Section (Optional - Keep hidden for now) -->
         <TextView
             android:id="@+id/userEmailTextView"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
+            android:layout_gravity="center_horizontal"
             android:text="Logged in as: user@example.com"
-            android:textSize="16sp"
-            android:textColor="@color/black"
-            android:layout_marginBottom="24dp"
-            android:visibility="gone" />
+            android:textAppearance="?attr/textAppearanceBodyMedium"
+            android:textColor="?attr/colorOnSurfaceVariant"
+            android:layout_marginBottom="16dp"
+            android:visibility="gone"
+            tools:visibility="visible"/> <!-- Keep tools:visibility for preview -->
 
-        <!-- Emergency Contacts Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Emergency Contacts (Max 5)"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
-        <!-- Button to Open Contact Picker -->
-        <com.google.android.material.button.MaterialButton
-            android:id="@+id/selectContactsButton"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="Select Contacts"
-            android:backgroundTint="@color/purple"
-            android:textColor="@color/white"
-            app:cornerRadius="8dp"
-            android:layout_marginBottom="8dp" />
-
-        <!-- List of Selected Contacts -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Selected Contacts:"
-            android:textSize="16sp"
-            android:textStyle="italic"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
-        <LinearLayout
-            android:id="@+id/selectedContactsContainer"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:orientation="vertical"
-            android:layout_marginBottom="24dp" />
-
-        <!-- SOS Message Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SOS Message"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginBottom="8dp" />
-
-        <com.google.android.material.textfield.TextInputLayout
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            style="@style/Widget.MaterialComponents.TextInputLayout.OutlinedBox"
-            android:layout_marginBottom="8dp">
-
-            <com.google.android.material.textfield.TextInputEditText
-                android:id="@+id/messageBody"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:hint="Message to send (include [Location] for coordinates)"
-                android:inputType="textMultiLine"
-                android:minLines="3"
-                android:gravity="top"/>
-        </com.google.android.material.textfield.TextInputLayout>
-
-        <!-- SOS Options Section -->
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="SOS Actions"
-            android:textSize="20sp"
-            android:textStyle="bold"
-            android:textColor="@color/black"
-            android:layout_marginTop="16dp"
-            android:layout_marginBottom="8dp" />
-
+        <!-- Emergency Contacts Card -->
         <com.google.android.material.card.MaterialCardView
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            app:cardCornerRadius="8dp"
-            app:cardElevation="4dp"
-            app:strokeColor="@color/purple"
-            app:strokeWidth="1dp">
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
 
             <LinearLayout
                 android:layout_width="match_parent"
@@ -112,13 +40,101 @@
                 android:orientation="vertical"
                 android:padding="16dp">
 
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Emergency Contacts (Max 5)"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.button.MaterialButton
+                    android:id="@+id/selectContactsButton"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:text="Select Contacts"
+                    app:icon="@drawable/baseline_person_add_24"
+                    app:iconGravity="textStart"
+                    android:backgroundTint="?attr/colorPrimary"
+                    android:textColor="?attr/colorOnPrimary"
+                    app:cornerRadius="8dp"
+                    android:layout_marginBottom="12dp" />
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Selected Contacts:"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textStyle="italic"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginBottom="8dp" />
+
+                <LinearLayout
+                    android:id="@+id/selectedContactsContainer"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:orientation="vertical"
+                    android:minHeight="48dp"/>
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+        <!-- SOS Message & Actions Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="16dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="SOS Message &amp; Actions"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutSosMessage"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/messageBody"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:hint="SOS Message template"
+                        android:tooltipText="Use [Location] to include coordinates"
+                        android:inputType="textMultiLine"
+                        android:minLines="3"
+                        android:gravity="top"/>
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="When SOS is triggered:"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:textColor="?attr/colorOnSurfaceVariant"
+                    android:layout_marginBottom="8dp" />
+
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/playSound"
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:text="Play Loud Sound"
                     android:checked="true"
-                    app:buttonTint="@color/purple" />
+                    android:minHeight="48dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    app:buttonTint="?attr/colorPrimary" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/sendSMS"
@@ -126,7 +142,9 @@
                     android:layout_height="wrap_content"
                     android:text="Send SMS to Contacts"
                     android:checked="true"
-                    app:buttonTint="@color/purple" />
+                    android:minHeight="48dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    app:buttonTint="?attr/colorPrimary" />
 
                 <com.google.android.material.checkbox.MaterialCheckBox
                     android:id="@+id/sendNotification"
@@ -134,8 +152,72 @@
                     android:layout_height="wrap_content"
                     android:text="Send Notification (Placeholder)"
                     android:checked="true"
-                    app:buttonTint="@color/purple"
-                    android:layout_marginBottom="16dp"/>
+                    android:minHeight="48dp"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    app:buttonTint="?attr/colorPrimary"/>
+
+            </LinearLayout>
+        </com.google.android.material.card.MaterialCardView>
+
+
+        <!-- Fake Call Setup Card -->
+        <com.google.android.material.card.MaterialCardView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="24dp"
+            app:cardElevation="2dp"
+            app:cardCornerRadius="12dp">
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="vertical"
+                android:padding="16dp">
+
+                <TextView
+                    android:layout_width="wrap_content"
+                    android:layout_height="wrap_content"
+                    android:text="Fake Call Setup"
+                    android:textAppearance="?attr/textAppearanceTitleMedium"
+                    android:textColor="?attr/colorOnSurface"
+                    android:layout_marginBottom="12dp" />
+
+                <com.google.android.material.textfield.TextInputLayout
+                    android:id="@+id/layoutFakeCallerName"
+                    style="@style/Widget.Material3.TextInputLayout.OutlinedBox"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:layout_marginBottom="12dp"
+                    android:hint="Fake Caller Name">
+
+                    <com.google.android.material.textfield.TextInputEditText
+                        android:id="@+id/editTextFakeCallerName"
+                        android:layout_width="match_parent"
+                        android:layout_height="wrap_content"
+                        android:inputType="textPersonName"
+                        android:maxLines="1" />
+                </com.google.android.material.textfield.TextInputLayout>
+
+                <com.google.android.material.materialswitch.MaterialSwitch
+                    android:id="@+id/switchScheduleFakeCall"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:text="Schedule Fake Call Automatically"
+                    android:textAppearance="?attr/textAppearanceBodyMedium"
+                    android:layout_marginBottom="8dp"/>
+
+                <Spinner
+                    android:id="@+id/spinnerFakeCallInterval"
+                    android:layout_width="match_parent"
+                    android:layout_height="wrap_content"
+                    android:minHeight="48dp"
+                    android:background="@drawable/spinner_background"
+                    android:paddingStart="8dp"
+                    android:paddingEnd="8dp"
+                    android:visibility="gone"
+                    tools:visibility="visible" />
+
             </LinearLayout>
         </com.google.android.material.card.MaterialCardView>
 
@@ -145,23 +227,25 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Save Settings"
-            android:layout_marginTop="24dp"
-            android:backgroundTint="@color/purple"
-            android:textColor="@color/white"
-            app:cornerRadius="8dp" />
+            android:layout_marginBottom="16dp"
+            android:backgroundTint="?attr/colorPrimary"
+            android:textColor="?attr/colorOnPrimary"
+            app:cornerRadius="8dp"
+            android:minHeight="56dp"/>
 
         <!-- Sign Out Button -->
         <com.google.android.material.button.MaterialButton
             android:id="@+id/signOutButton"
-            style="@style/Widget.MaterialComponents.Button.OutlinedButton"
+            style="@style/Widget.Material3.Button.OutlinedButton"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:text="Sign Out"
-            android:layout_marginTop="16dp"
-            android:textColor="@color/purple"
-            app:strokeColor="@color/purple"
+            android:textColor="?attr/colorError"
+            app:strokeColor="?attr/colorError"
             app:cornerRadius="8dp"
-            android:visibility="gone"/>
+            android:minHeight="56dp"
+            android:visibility="gone"
+            tools:visibility="visible"/> <!-- Keep tools:visibility for preview -->
 
     </LinearLayout>
 </ScrollView>

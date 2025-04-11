@@ -1,6 +1,7 @@
 package com.example.safeher;
 
 import android.content.Context;
+import android.content.SharedPreferences;
 import android.media.AudioManager; // Import if needed for volume controls later
 import android.media.Ringtone;
 import android.media.RingtoneManager;
@@ -28,6 +29,8 @@ public class FakeCallActivity extends AppCompatActivity {
     private static final String TAG = "FakeCallActivity";
     private static final long CALL_DURATION_MS = 20000; // Stop after 20 seconds
     private static final long[] VIBRATION_PATTERN = {0, 1000, 1000}; // 0ms delay, 1s vibrate, 1s pause
+    private static final String PREFS_NAME = "SOSSettings"; // Same prefs name used in Settings
+    private static final String FAKE_CALLER_NAME_KEY = "fakeCallerName"; // Same key used in Settings
 
     private Ringtone ringtone;
     private Vibrator vibrator;
@@ -65,7 +68,8 @@ public class FakeCallActivity extends AppCompatActivity {
         declineButton = findViewById(R.id.declineButton);
         answerButton = findViewById(R.id.answerButton);
 
-        // TODO: Optionally get caller name/image from Intent extras later
+        // Load and display the caller name from SharedPreferences
+        loadCallerDetails();
 
         declineButton.setOnClickListener(v -> stopCallAndFinish());
         // No essential action needed for answer button in this simple version
@@ -82,6 +86,17 @@ public class FakeCallActivity extends AppCompatActivity {
         stopCallRunnable = this::stopCallAndFinish;
         handler.postDelayed(stopCallRunnable, CALL_DURATION_MS);
         Log.d(TAG, "Call scheduled to stop in " + CALL_DURATION_MS + "ms");
+    }
+
+    private void loadCallerDetails() {
+        SharedPreferences prefs = getSharedPreferences(PREFS_NAME, Context.MODE_PRIVATE);
+        String callerName = prefs.getString(FAKE_CALLER_NAME_KEY, "Mom"); // Default to "Mom"
+        callerNameTextView.setText(callerName);
+        Log.d(TAG, "Loaded fake caller name: " + callerName);
+
+        // TODO: Load caller image later if implemented
+        // String imageUriString = prefs.getString(FAKE_CALLER_IMAGE_KEY, null);
+        // if (imageUriString != null) { ... load image into callerImageView ... }
     }
 
     private void startRingtoneAndVibration() {
