@@ -1,5 +1,4 @@
 package com.example.safeher;
-
 import android.content.Context;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -17,11 +16,9 @@ import android.widget.EditText;
 import android.widget.LinearLayout;
 import android.widget.TextView;
 import android.widget.Toast;
-
 import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.fragment.app.Fragment;
-
 import com.google.android.gms.auth.api.signin.GoogleSignIn;
 import com.google.android.gms.auth.api.signin.GoogleSignInClient;
 import com.google.android.gms.auth.api.signin.GoogleSignInOptions;
@@ -43,7 +40,8 @@ public class SettingsFragment extends Fragment {
     private TextView userEmailTextView;
     private LinearLayout selectedContactsContainer;
 
-    private static final int PICK_CONTACT_REQUEST = 1;
+    private static final int PICK_CONTACT_REQUEST_1 = 1;
+    private static final int PICK_CONTACT_REQUEST_2 = 2;
     private static final String PREFS_NAME = "SOSSettings";
     private static final String CONTACTS_KEY = "emergencyContacts";
 
@@ -110,54 +108,109 @@ public class SettingsFragment extends Fragment {
             return;
         }
 
-        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.CommonDataKinds.Phone.CONTENT_URI);
-        startActivityForResult(intent, PICK_CONTACT_REQUEST);
+        Intent intent = new Intent(Intent.ACTION_PICK, ContactsContract.Contacts.CONTENT_URI);
+        startActivityForResult(intent, PICK_CONTACT_REQUEST_1);
     }
 
     @Override
     public void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
 
-        if (requestCode == PICK_CONTACT_REQUEST && resultCode == getActivity().RESULT_OK && data != null) {
+        if (resultCode == getActivity().RESULT_OK && data != null) {
             Uri contactUri = data.getData();
             if (contactUri != null) {
-                String phoneNumber = getPhoneNumberFromUri(contactUri);
-                if (phoneNumber != null) {
-                    phoneNumber = phoneNumber.replaceAll("[\\s\\-()]", "");
-                    if (!selectedContacts.contains(phoneNumber) && selectedContacts.size() < 5) {
-                        selectedContacts.add(phoneNumber);
-                        displaySelectedContacts();
-                        saveContacts();
-                    } else if (selectedContacts.contains(phoneNumber)) {
-                        Toast.makeText(getContext(), "Contact already selected.", Toast.LENGTH_SHORT).show();
+                String contactId = getContactIdFromUri(contactUri);
+
+                if (contactId != null) {
+                    String phoneNumber = getPhoneNumberFromContactId(contactId);
+
+                    if (phoneNumber != null) {
+                        Log.d("SettingsFragment", "Selected contact ID: " + contactId + ", Phone number: " + phoneNumber);
+
+                        if (selectedContacts.size() < 5) {
+                            selectedContacts.add(phoneNumber);
+                            displaySelectedContacts();
+                            saveContacts();
+                        } else {
+                            Toast.makeText(getContext(), "Contact limit reached.", Toast.LENGTH_SHORT).show();
+                        }
+
                     } else {
-                        Toast.makeText(getContext(), "Cannot add more than 5 contacts.", Toast.LENGTH_SHORT).show();
+                        Log.w("SettingsFragment", "Could not retrieve phone number for selected contact ID: " + contactId);
+                        Toast.makeText(getContext(), "Could not get phone number for this contact.", Toast.LENGTH_SHORT).show();
                     }
                 } else {
-                    Toast.makeText(getContext(), "Could not retrieve phone number.", Toast.LENGTH_SHORT).show();
+                    Log.w("SettingsFragment", "Could not retrieve contact ID from URI: " + contactUri);
+                    Toast.makeText(getContext(), "Could not identify selected contact.", Toast.LENGTH_SHORT).show();
                 }
             }
+        } else {
+            Log.d("SettingsFragment", "Contact selection cancelled or failed.");
         }
     }
 
-    private String getPhoneNumberFromUri(Uri contactUri) {
-        String phoneNumber = null;
-        if (getActivity() == null || getActivity().getContentResolver() == null) return null;
+    private String getContactIdFromUri(Uri contactUri) {
+        String contactId = null;
+        Cursor cursor = null;
+        if (getActivity() == null) return null;
 
-        Cursor cursor = getActivity().getContentResolver().query(contactUri,
-                new String[]{ContactsContract.CommonDataKinds.Phone.NUMBER},
-                null, null, null);
+        try {
+            String[] projection = {ContactsContract.Contacts._ID};
+            cursor = getActivity().getContentResolver().query(contactUri, projection, null, null, null);
 
-        if (cursor != null) {
-            try {
-                if (cursor.moveToFirst()) {
-                    int phoneIndex = cursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
-                    if (phoneIndex != -1) {
-                        phoneNumber = cursor.getString(phoneIndex);
-                    }
+            if (cursor != null && cursor.moveToFirst()) {
+                int idColumnIndex = cursor.getColumnIndex(ContactsContract.Contacts._ID);
+                if (idColumnIndex >= 0) {
+                    contactId = cursor.getString(idColumnIndex);
+                } else {
+                    Log.e("SettingsFragment", "Could not find _ID column for contact URI.");
                 }
-            } finally {
+            } else {
+                Log.w("SettingsFragment", "Cursor is null or empty for contact URI: " + contactUri);
+            }
+        } catch (Exception e) {
+            Log.e("SettingsFragment", "Error querying contact URI for ID: " + contactUri, e);
+        } finally {
+            if (cursor != null) {
                 cursor.close();
+            }
+        }
+        return contactId;
+    }
+
+    private String getPhoneNumberFromContactId(String contactId) {
+        String phoneNumber = null;
+        Cursor phoneCursor = null;
+
+        if (getActivity() == null || contactId == null) {
+            Log.e("SettingsFragment", "Activity or Contact ID is null, cannot query phone number.");
+            return null;
+        }
+
+        try {
+            Uri phoneUri = ContactsContract.CommonDataKinds.Phone.CONTENT_URI;
+            String phoneSelection = ContactsContract.CommonDataKinds.Phone.CONTACT_ID + " = ?";
+            String[] phoneSelectionArgs = { contactId };
+            String[] phoneProjection = { ContactsContract.CommonDataKinds.Phone.NUMBER };
+
+            phoneCursor = getActivity().getContentResolver().query(phoneUri, phoneProjection, phoneSelection, phoneSelectionArgs, null);
+
+            if (phoneCursor != null && phoneCursor.moveToFirst()) {
+                int numberColumn = phoneCursor.getColumnIndex(ContactsContract.CommonDataKinds.Phone.NUMBER);
+                if (numberColumn >= 0) {
+                    phoneNumber = phoneCursor.getString(numberColumn);
+                    Log.d("SettingsFragment", "Retrieved Phone Number using Contact ID: " + phoneNumber);
+                } else {
+                    Log.e("SettingsFragment", "Phone number column not found in phone query using Contact ID.");
+                }
+            } else {
+                Log.w("SettingsFragment", "Phone cursor is null or empty for Contact ID: " + contactId);
+            }
+        } catch (Exception e) {
+            Log.e("SettingsFragment", "Error querying phone numbers for Contact ID: " + contactId, e);
+        } finally {
+            if (phoneCursor != null) {
+                phoneCursor.close();
             }
         }
         return phoneNumber;
@@ -235,6 +288,16 @@ public class SettingsFragment extends Fragment {
         SharedPreferences.Editor editor = sharedPreferences.edit();
         editor.putStringSet(CONTACTS_KEY, selectedContacts);
         editor.apply();
+    }
+
+    private void saveContactPreference(String key, String phoneNumber) {
+        if (getContext() != null) {
+            SharedPreferences sharedPreferences = getContext().getSharedPreferences("SOSSettings", Context.MODE_PRIVATE);
+            SharedPreferences.Editor editor = sharedPreferences.edit();
+            editor.putString(key, phoneNumber);
+            editor.apply();
+            Log.d("SettingsFragment", "Saved " + key + " = " + phoneNumber);
+        }
     }
 
     private void signOut() {
