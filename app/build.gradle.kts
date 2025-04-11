@@ -42,6 +42,7 @@ dependencies {
     implementation(libs.credentials)
     implementation(libs.credentials.play.services.auth)
     implementation("com.firebase:geofire-android:3.2.0")
+    implementation("androidx.viewpager2:viewpager2:1.1.0")
     implementation(libs.play.services.auth)
     implementation(libs.googleid)
     implementation("com.google.firebase:firebase-messaging:24.1.1")
